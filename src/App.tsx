@@ -344,26 +344,78 @@ const CommandPalette = ({ onClose, nav }: { onClose: () => void; nav: (v: View) 
 // ═══════════════════════════════════════════
 const AC = ['#8B5CF6', '#EC4899', '#F97316', '#10B981', '#0EA5E9', '#F59E0B'];
 const OnBoarding = ({ onDone }: { onDone: (u: { name: string; avatarColor: string; joinedAt: string }) => void }) => {
-    const [n, setN] = useState(''); const [c, setC] = useState(AC[0]);
-    return (<div className="min-h-screen bg-[#06040F] flex flex-col md:flex-row">
-        <div className="relative flex-1 md:w-[55%] flex flex-col items-center justify-center p-8 md:p-16 min-h-[40vh] md:min-h-screen overflow-hidden">
-            <AmbientBG /><div className="relative z-10 text-center md:text-left max-w-lg">
-                <h1 className="font-display text-5xl md:text-6xl font-extrabold tracking-tight mb-4">
-                    <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">DESDOBRE</span><span className="text-white">.</span></h1>
-                <p className="text-white/60 text-lg md:text-xl mb-8">A plataforma que transforma o jeito que você estuda para o ENEM.</p>
-                <div className="space-y-3">{['350+ episódios estruturados', 'GPS de diagnóstico inteligente', 'Progresso que você pode ver'].map((f, i) => (
-                    <motion.div key={f} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.15 }} className="inline-flex items-center gap-2 bg-white/[0.08] border border-white/10 rounded-full px-4 py-2 text-sm text-white/80 mr-2">
-                        <span className="text-violet-400">✦</span>{f}</motion.div>))}</div></div>
-            {Array.from({ length: 12 }).map((_, i) => (<motion.div key={i} className="absolute w-1 h-1 bg-white rounded-full" style={{ left: `${10 + Math.random() * 80}%`, top: `${10 + Math.random() * 80}%` }}
-                animate={{ opacity: [0.1, 0.5, 0.1], y: [0, -30, 0] }} transition={{ duration: 4 + Math.random() * 4, repeat: Infinity, delay: Math.random() * 3 }} />))}</div>
-        <div className="flex-1 md:w-[45%] bg-[#F0EDF8] flex items-center justify-center p-8 md:p-16 min-h-[60vh] md:min-h-screen">
-            <div className="w-full max-w-sm"><h2 className="font-display text-2xl font-bold text-[#1A1535] mb-2">Olá! Como posso te chamar?</h2>
-                <p className="text-[#6B6490] text-sm mb-8">Seu progresso ficará salvo localmente.</p>
-                <input value={n} onChange={e => setN(e.target.value)} placeholder="Seu nome ou apelido..." className="w-full px-5 py-4 rounded-2xl border-2 border-violet-500/30 bg-white text-[#1A1535] outline-none focus:border-violet-500 focus:shadow-lg transition-all mb-6 font-medium" />
-                <p className="text-[#6B6490] text-xs font-bold uppercase tracking-widest mb-3">Escolha sua cor</p>
-                <div className="flex gap-3 mb-8">{AC.map(cl => (<button key={cl} onClick={() => setC(cl)} className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm transition-all ${c === cl ? 'ring-2 ring-offset-2 ring-offset-[#F0EDF8] ring-violet-500 scale-110' : ''}`} style={{ background: cl }}>{n ? n[0].toUpperCase() : '?'}</button>))}</div>
-                <button disabled={!n.trim()} onClick={() => onDone({ name: n.trim(), avatarColor: c, joinedAt: new Date().toISOString() })} className="w-full py-4 rounded-2xl font-display font-bold text-white bg-gradient-to-r from-violet-500 via-pink-500 to-orange-500 hover:brightness-110 hover:scale-[1.02] transition-all disabled:opacity-40 disabled:cursor-not-allowed">
-                    Começar minha jornada →</button></div></div></div>)
+    const [n, setN] = useState('');
+    const [c, setC] = useState(AC[0]);
+
+    return (
+        <div className="min-h-screen bg-[#05070A] flex flex-col md:flex-row overflow-hidden">
+            <div className="relative flex-1 md:w-1/2 flex flex-col items-center justify-center p-8 md:p-16 min-h-[40vh] md:min-h-screen">
+                <AmbientBG />
+                <div className="relative z-10 text-center md:text-left max-w-lg">
+                    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="space-y-6">
+                        <h1 className="font-display text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-none mb-4">
+                            <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">DESDOBRE</span>
+                            <span className="text-white">.</span>
+                        </h1>
+                        <p className="text-gray-400 text-xl md:text-2xl font-medium max-w-md">Transforme o jeito que você estuda para o ENEM.</p>
+                        <div className="flex flex-wrap gap-3">
+                            {['350+ Episódios', 'GPS Inteligente', 'Foco Máximo'].map((f, i) => (
+                                <motion.div key={f} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.1 }} 
+                                    className="pill glass px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white/70">
+                                    <span className="text-violet-400 mr-2">✦</span>{f}
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+
+            <div className="flex-1 md:w-1/2 flex items-center justify-center p-8 md:p-16 relative z-10">
+                <div className="w-full max-w-md glass-strong border-white/10 p-12 rounded-[48px] shadow-3xl space-y-10">
+                    <div className="space-y-2">
+                        <h2 className="font-display text-3xl font-black text-white uppercase tracking-tighter">Olá! Quem é você?</h2>
+                        <p className="text-gray-500 font-medium tracking-tight">Crie seu perfil local para começar.</p>
+                    </div>
+
+                    <div className="space-y-6">
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-400">Seu Nome</label>
+                            <input 
+                                value={n} 
+                                onChange={e => setN(e.target.value)} 
+                                placeholder="Como quer ser chamado?" 
+                                className="w-full px-6 py-5 rounded-3xl bg-white/5 border border-white/10 text-white outline-none focus:border-violet-500/50 focus:bg-white/[0.08] transition-all font-bold placeholder:text-white/20" 
+                            />
+                        </div>
+
+                        <div className="space-y-4">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-pink-400">Identidade Visual</label>
+                            <div className="flex flex-wrap gap-4">
+                                {AC.map(cl => (
+                                    <button 
+                                        key={cl} 
+                                        onClick={() => setC(cl)} 
+                                        className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-xl transition-all shadow-xl ${c === cl ? 'ring-2 ring-white scale-110 rotate-3' : 'opacity-40 hover:opacity-100 hover:scale-105'}`} 
+                                        style={{ background: cl }}
+                                    >
+                                        {n ? n[0].toUpperCase() : '?'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button 
+                        disabled={!n.trim()} 
+                        onClick={() => onDone({ name: n.trim(), avatarColor: c, joinedAt: new Date().toISOString() })} 
+                        className="btn-glow w-full py-6 rounded-3xl font-display font-black text-white bg-gradient-to-r from-violet-600 to-pink-600 hover:scale-[1.03] active:scale-[0.98] transition-all disabled:opacity-20 disabled:grayscale uppercase tracking-[0.2em] text-xs shadow-2xl"
+                    >
+                        Começar minha jornada →
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 // ═══════════════════════════════════════════
