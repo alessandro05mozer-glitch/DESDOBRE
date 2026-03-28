@@ -1,18 +1,18 @@
-// EpisodeModalNew.tsx — Modal de Episódio v2
+// EpisodeModalNew.tsx — Modal de Episódio v3
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { resolveVideo, fetchProfessores } from '../api';
 
 const CORES_MATERIA: Record<string, { accent: string; bg: string; light: string }> = {
-    historia:   { accent: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  light: 'rgba(245,158,11,0.15)' },
-    matematica: { accent: '#3b82f6', bg: 'rgba(59,130,246,0.08)',  light: 'rgba(59,130,246,0.15)' },
-    quimica:    { accent: '#10b981', bg: 'rgba(16,185,129,0.08)',  light: 'rgba(16,185,129,0.15)' },
-    biologia:   { accent: '#84cc16', bg: 'rgba(132,204,22,0.08)',  light: 'rgba(132,204,22,0.15)' },
-    fisica:     { accent: '#06b6d4', bg: 'rgba(6,182,212,0.08)',   light: 'rgba(6,182,212,0.15)'  },
-    geografia:  { accent: '#14b8a6', bg: 'rgba(20,184,166,0.08)',  light: 'rgba(20,184,166,0.15)' },
-    redacao:    { accent: '#ec4899', bg: 'rgba(236,72,153,0.08)',  light: 'rgba(236,72,153,0.15)' },
-    socfilo:    { accent: '#a855f7', bg: 'rgba(168,85,247,0.08)',  light: 'rgba(168,85,247,0.15)' },
+    historia:   { accent: '#f59e0b', bg: 'rgba(245,158,11,0.06)',  light: 'rgba(245,158,11,0.14)' },
+    matematica: { accent: '#4f8ef7', bg: 'rgba(79,142,247,0.06)',  light: 'rgba(79,142,247,0.14)' },
+    quimica:    { accent: '#00d4aa', bg: 'rgba(0,212,170,0.06)',   light: 'rgba(0,212,170,0.14)'  },
+    biologia:   { accent: '#84cc16', bg: 'rgba(132,204,22,0.06)',  light: 'rgba(132,204,22,0.14)' },
+    fisica:     { accent: '#06b6d4', bg: 'rgba(6,182,212,0.06)',   light: 'rgba(6,182,212,0.14)'  },
+    geografia:  { accent: '#14b8a6', bg: 'rgba(20,184,166,0.06)',  light: 'rgba(20,184,166,0.14)' },
+    redacao:    { accent: '#f472b6', bg: 'rgba(244,114,182,0.06)', light: 'rgba(244,114,182,0.14)' },
+    socfilo:    { accent: '#a78bfa', bg: 'rgba(167,139,250,0.06)', light: 'rgba(167,139,250,0.14)' },
 };
 
 interface Quiz { pergunta: string; alternativas: string[]; correta: number; }
@@ -85,34 +85,36 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: 0.18 }}
                 className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center p-0 sm:p-4"
-                style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }}
+                style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(16px)' }}
                 onClick={onClose}
             >
                 <motion.div
-                    initial={{ y: 60, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: 60, opacity: 0 }}
-                    transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+                    initial={{ y: 48, opacity: 0, scale: 0.98 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                    exit={{ y: 48, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 30, stiffness: 380 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-full h-[92vh] sm:max-w-lg sm:h-auto sm:max-h-[86vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border"
+                    className="w-full h-[92vh] sm:max-w-lg sm:h-auto sm:max-h-[88vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl"
                     style={{
                         background: 'var(--bg-surface)',
-                        borderColor: 'var(--border-hover)',
+                        border: '1px solid var(--border-hover)',
+                        boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
                     }}
                 >
                     {/* Confetti */}
                     <AnimatePresence>
                         {justCompleted && (
                             <div className="absolute inset-x-0 top-0 h-full pointer-events-none z-50 overflow-hidden rounded-t-3xl sm:rounded-2xl">
-                                {Array.from({ length: 20 }).map((_, i) => (
+                                {Array.from({ length: 24 }).map((_, i) => (
                                     <motion.div
                                         key={i}
-                                        initial={{ y: -10, x: `${Math.random() * 100}%`, opacity: 1 }}
-                                        animate={{ y: 600, opacity: 0, rotate: Math.random() * 360 }}
-                                        transition={{ duration: 1.5 + Math.random(), ease: 'easeOut' }}
-                                        className="absolute top-0 w-2 h-2 rounded-full"
-                                        style={{ background: [cores.accent, '#ec4899', '#10b981', '#f59e0b'][i % 4] }}
+                                        initial={{ y: -10, x: `${Math.random() * 100}%`, opacity: 1, scale: 1 }}
+                                        animate={{ y: 620, opacity: 0, rotate: Math.random() * 540, scale: 0.5 }}
+                                        transition={{ duration: 1.8 + Math.random() * 0.8, ease: 'easeOut' }}
+                                        className="absolute top-0 w-2 h-2 rounded"
+                                        style={{ background: [cores.accent, '#4f8ef7', '#00d4aa', '#f59e0b', '#f472b6'][i % 5] }}
                                     />
                                 ))}
                             </div>
@@ -121,22 +123,25 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
 
                     {/* Drag handle (mobile) */}
                     <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
-                        <div className="w-10 h-1 rounded-full" style={{ background: 'var(--border-hover)' }} />
+                        <div className="w-10 h-1 rounded-full" style={{ background: 'var(--border-strong)' }} />
                     </div>
 
                     {/* Header */}
                     <div
-                        className="flex-shrink-0 px-5 py-4 border-b"
-                        style={{
-                            background: cores.bg,
-                            borderColor: 'var(--border)',
-                        }}
+                        className="flex-shrink-0 px-5 pt-4 pb-4 border-b"
+                        style={{ borderColor: 'var(--border)' }}
                     >
+                        {/* Accent line */}
+                        <div
+                            className="h-px w-16 rounded-full mb-3"
+                            style={{ background: cores.accent }}
+                        />
+
                         <div className="flex items-start gap-3">
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-1.5">
                                     <span
-                                        className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                                        className="text-[9px] font-bold px-2 py-0.5 rounded-md tracking-widest uppercase"
                                         style={{ background: cores.light, color: cores.accent }}
                                     >
                                         {tituloTemporada}
@@ -146,15 +151,21 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                     </span>
                                 </div>
                                 <h2
-                                    className="font-bold text-base leading-tight line-clamp-2"
-                                    style={{ color: 'var(--text-primary)' }}
+                                    className="font-extrabold text-base leading-tight line-clamp-2 tracking-tight"
+                                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.025em' }}
                                 >
                                     {episodio.titulo}
                                 </h2>
-                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                                    {concluidos}/{total} tópicos
+                                <p className="text-xs mt-1.5 flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                                    <span
+                                        className="font-bold"
+                                        style={{ color: tudo100 ? 'var(--accent)' : cores.accent }}
+                                    >
+                                        {concluidos}/{total}
+                                    </span>
+                                    tópicos
                                     {tudo100 && (
-                                        <span className="ml-2 font-semibold" style={{ color: '#10b981' }}>
+                                        <span className="font-bold" style={{ color: 'var(--accent)' }}>
                                             · Concluido!
                                         </span>
                                     )}
@@ -162,10 +173,16 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                             </div>
                             <button
                                 onClick={onClose}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-all"
                                 style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}
-                                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = 'var(--bg-overlay)';
+                                    e.currentTarget.style.color = 'var(--text-primary)';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.background = 'var(--bg-elevated)';
+                                    e.currentTarget.style.color = 'var(--text-muted)';
+                                }}
                             >
                                 <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                                     <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
@@ -174,13 +191,12 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                         </div>
 
                         {/* Progress bar */}
-                        <div className="mt-3 progress-bar">
+                        <div className="mt-3.5 progress-bar" style={{ height: '3px' }}>
                             <motion.div
-                                className="progress-bar-fill"
-                                style={{ background: cores.accent }}
+                                style={{ height: '100%', borderRadius: 999, background: tudo100 ? 'var(--accent)' : cores.accent }}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.6, ease: 'easeOut' }}
+                                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                             />
                         </div>
                     </div>
@@ -198,17 +214,19 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                     className="w-full flex items-center gap-3 p-4 rounded-xl border transition-all text-left"
                                     style={{
                                         background: cores.bg,
-                                        borderColor: `${cores.accent}40`,
+                                        borderColor: `${cores.accent}35`,
                                     }}
+                                    onMouseEnter={e => (e.currentTarget.style.borderColor = `${cores.accent}60`)}
+                                    onMouseLeave={e => (e.currentTarget.style.borderColor = `${cores.accent}35`)}
                                 >
                                     <div
-                                        className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
                                         style={{ background: cores.light }}
                                     >
                                         {professorAtual.avatar}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                        <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
                                             {professorAtual.nome}
                                         </p>
                                         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -216,8 +234,8 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                         </p>
                                     </div>
                                     <div
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                        style={{ background: cores.accent, color: 'white' }}
+                                        className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                                        style={{ background: cores.accent, color: '#08080c' }}
                                     >
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                                             <path d="M8 5v14l11-7z" />
@@ -229,33 +247,40 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                             {proximoProf && (
                                 <button
                                     onClick={() => { setProfIdx((profIdx + 1) % professores.length); assistir((profIdx + 1) % professores.length); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all text-left"
-                                    style={{ borderColor: 'var(--border)', background: 'transparent' }}
-                                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
-                                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-left"
+                                    style={{ border: '1px solid var(--border)' }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.background = 'var(--bg-elevated)';
+                                        e.currentTarget.style.borderColor = 'var(--border-hover)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.background = 'transparent';
+                                        e.currentTarget.style.borderColor = 'var(--border)';
+                                    }}
                                 >
                                     <span className="text-base flex-shrink-0">{proximoProf.avatar}</span>
                                     <span className="text-sm flex-1" style={{ color: 'var(--text-secondary)' }}>
                                         {proximoProf.nome}
                                     </span>
-                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Alt.</span>
+                                    <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                                        Alternativo
+                                    </span>
                                 </button>
                             )}
                         </div>
 
-                        {/* Divider */}
                         <div className="border-t" style={{ borderColor: 'var(--border)' }} />
 
                         {/* Checklist */}
                         <div>
                             <p className="section-label mb-3">Tópicos do episódio</p>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 {episodio.topicos.map((topico, i) => (
                                     <motion.button
                                         key={i}
                                         onClick={() => toggleTopico(i)}
-                                        whileHover={{ x: 2 }}
                                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
+                                        whileHover={{ x: 2 }}
                                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
                                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                     >
@@ -263,13 +288,14 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                             className="check-box flex-shrink-0"
                                             style={topicosFeitos[i] ? {
                                                 borderColor: cores.accent,
-                                                background: `${cores.accent}20`,
+                                                background: `${cores.accent}18`,
                                             } : {}}
                                         >
                                             {topicosFeitos[i] && (
                                                 <motion.svg
                                                     initial={{ scale: 0 }}
                                                     animate={{ scale: 1 }}
+                                                    transition={{ type: 'spring', damping: 20, stiffness: 400 }}
                                                     width="9" height="9"
                                                     fill="none"
                                                     stroke={cores.accent}
@@ -281,7 +307,7 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                             )}
                                         </div>
                                         <span
-                                            className="text-sm transition-all"
+                                            className="text-sm transition-all leading-relaxed"
                                             style={{
                                                 color: topicosFeitos[i] ? 'var(--text-muted)' : 'var(--text-secondary)',
                                                 textDecoration: topicosFeitos[i] ? 'line-through' : 'none',
@@ -296,8 +322,8 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
 
                         {/* Description */}
                         <div
-                            className="p-4 rounded-xl border"
-                            style={{ background: 'var(--bg-base)', borderColor: 'var(--border)' }}
+                            className="p-4 rounded-xl"
+                            style={{ background: 'var(--bg-base)', border: '1px solid var(--border)' }}
                         >
                             <p className="section-label mb-2">Sobre este episódio</p>
                             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
@@ -317,11 +343,17 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                         {/* Quiz */}
                         {episodio.quiz && (
                             <div
-                                className="p-4 rounded-xl border"
-                                style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}
+                                className="p-4 rounded-xl"
+                                style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}
                             >
-                                <p className="section-label mb-3">Quiz rápido</p>
-                                <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                                <div className="flex items-center gap-2 mb-3">
+                                    <div
+                                        className="w-1 h-4 rounded-full"
+                                        style={{ background: 'var(--brand)' }}
+                                    />
+                                    <p className="section-label">Quiz rápido</p>
+                                </div>
+                                <p className="text-sm font-bold mb-3 tracking-tight" style={{ color: 'var(--text-primary)' }}>
                                     {episodio.quiz.pergunta}
                                 </p>
                                 <div className="space-y-2">
@@ -332,8 +364,8 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                         let border = 'var(--border)';
                                         let color = 'var(--text-secondary)';
                                         if (quizResposta !== null) {
-                                            if (isCorreta) { bg = 'rgba(16,185,129,0.1)'; border = '#10b981'; color = '#10b981'; }
-                                            else if (isEscolhida) { bg = 'rgba(239,68,68,0.1)'; border = '#ef4444'; color = '#ef4444'; }
+                                            if (isCorreta) { bg = 'rgba(0,212,170,0.08)'; border = 'var(--accent)'; color = 'var(--accent)'; }
+                                            else if (isEscolhida) { bg = 'rgba(239,68,68,0.08)'; border = '#ef4444'; color = '#ef4444'; }
                                             else { color = 'var(--text-muted)'; }
                                         }
                                         return (
@@ -341,9 +373,9 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                                 key={i}
                                                 onClick={() => { if (quizResposta === null) setQuizResposta(i); }}
                                                 disabled={quizResposta !== null}
-                                                className="w-full text-left px-3 py-2.5 rounded-lg border text-sm font-medium transition-all"
+                                                className="w-full text-left px-3 py-2.5 rounded-xl border text-sm font-medium transition-all"
                                                 style={{ background: bg, borderColor: border, color }}
-                                                onMouseEnter={e => { if (quizResposta === null) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                                                onMouseEnter={e => { if (quizResposta === null) e.currentTarget.style.background = 'var(--bg-overlay)'; }}
                                                 onMouseLeave={e => { if (quizResposta === null) e.currentTarget.style.background = bg; }}
                                             >
                                                 {alt}
@@ -355,10 +387,10 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                     <motion.div
                                         initial={{ opacity: 0, y: 6 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className="mt-3 text-xs font-semibold text-center py-2 rounded-lg"
+                                        className="mt-3 text-xs font-bold text-center py-2.5 rounded-xl"
                                         style={quizResposta === episodio.quiz.correta
-                                            ? { background: 'rgba(16,185,129,0.1)', color: '#10b981' }
-                                            : { background: 'rgba(239,68,68,0.1)', color: '#ef4444' }
+                                            ? { background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--accent-glow)' }
+                                            : { background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }
                                         }
                                     >
                                         {quizResposta === episodio.quiz.correta
@@ -375,22 +407,22 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                             <motion.div
                                 initial={{ scale: 0.95, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                className="p-4 rounded-xl text-center border"
+                                transition={{ type: 'spring', damping: 20 }}
+                                className="p-4 rounded-xl text-center"
                                 style={{
-                                    background: 'rgba(16,185,129,0.08)',
-                                    borderColor: 'rgba(16,185,129,0.25)',
+                                    background: 'var(--accent-dim)',
+                                    border: '1px solid var(--accent-glow)',
                                 }}
                             >
-                                <p className="font-bold text-sm mb-0.5" style={{ color: '#10b981' }}>
-                                    Episódio concluído!
+                                <p className="font-extrabold text-sm mb-0.5 tracking-tight" style={{ color: 'var(--accent)' }}>
+                                    Episódio concluido!
                                 </p>
                                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                                    Você completou todos os tópicos deste episódio.
+                                    Todos os tópicos deste episódio foram marcados.
                                 </p>
                             </motion.div>
                         )}
 
-                        {/* Bottom spacing for mobile */}
                         <div className="h-4" />
                     </div>
                 </motion.div>
