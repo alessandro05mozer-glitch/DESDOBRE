@@ -1,104 +1,264 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
+const TRILHAS = [
+    {
+        id: 'fundamentos',
+        titulo: 'Fundamentos',
+        tag: 'Essencial',
+        desc: 'Base conceitual das principais disciplinas do ENEM. Ideal para quem está começando ou precisa revisar os conceitos centrais.',
+        color: '#3b82f6',
+        border: 'rgba(59,130,246,0.2)',
+        bg: 'rgba(59,130,246,0.06)',
+        etapas: [
+            { label: 'Matemática Básica', done: true },
+            { label: 'Interpretação Crítica', done: true },
+            { label: 'História Geral I', done: false },
+        ],
+        progress: 66,
+        icon: (
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+            </svg>
+        ),
+    },
+    {
+        id: 'estrategias',
+        titulo: 'Estratégias',
+        tag: 'Avançado',
+        desc: 'Métodos e técnicas para maximizar seu desempenho nas provas. Aprenda a usar a TRI a seu favor.',
+        color: '#10b981',
+        border: 'rgba(16,185,129,0.2)',
+        bg: 'rgba(16,185,129,0.06)',
+        etapas: [
+            { label: 'Análise da Matriz TRI', done: false },
+            { label: 'Microestrutura da Redação', done: false },
+            { label: 'Gestão de Tempo em Prova', done: false },
+        ],
+        progress: 0,
+        icon: (
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+        ),
+    },
+    {
+        id: 'repertorio',
+        titulo: 'Repertório',
+        tag: 'Complementar',
+        desc: 'Conteúdo sociocultural aplicado à argumentação dissertativa. Filmes, livros e músicas como repertório qualificado.',
+        color: '#ec4899',
+        border: 'rgba(236,72,153,0.2)',
+        bg: 'rgba(236,72,153,0.06)',
+        etapas: [
+            { label: 'Cinema e Sociologia', done: true },
+            { label: 'Filosofia Prática', done: false },
+            { label: 'Geopolítica e Guerra Fria', done: false },
+        ],
+        progress: 33,
+        icon: (
+            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+            </svg>
+        ),
+    },
+];
+
+function TagBadge({ label, color }: { label: string; color: string }) {
+    return (
+        <span
+            className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wide"
+            style={{ background: `${color}18`, color }}
+        >
+            {label}
+        </span>
+    );
+}
+
 export default function Trilhas({ onNavigate }: { onNavigate: (v: string, id?: string) => void }) {
-    const TRILHAS = [
-        {
-            id: 'fundamentos',
-            titulo: 'Fundamentos',
-            desc: 'Base conceitual das disciplinas.',
-            tempo: 'Essencial',
-            cor: 'from-blue-500 to-indigo-600',
-            bg: 'from-[#0a1128]/80 to-[#040914]',
-            shadow: 'shadow-[0_0_40px_rgba(59,130,246,0.15)]',
-            icon: (
-                <div className="w-20 h-20 flex items-center justify-center rounded-[2rem] bg-blue-500/10 mb-8 border border-blue-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                    <svg className="w-10 h-10 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-                </div>
-            ),
-            etapas: ['Matemática Básica', 'Interpretação Crítica', 'História Geral I']
-        },
-        {
-            id: 'estrategias',
-            titulo: 'Estratégias',
-            desc: 'Métodos para desempenho em provas.',
-            tempo: 'Avançado',
-            cor: 'from-emerald-400 to-teal-600',
-            bg: 'from-[#062118]/80 to-[#020d0a]',
-            shadow: 'shadow-[0_0_40px_rgba(16,185,129,0.15)]',
-            icon: (
-                <div className="w-20 h-20 flex items-center justify-center rounded-[2rem] bg-emerald-500/10 mb-8 border border-emerald-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                    <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                </div>
-            ),
-            etapas: ['Análise da Matriz TRI', 'Microestrutura (Redação)', 'Administração de Tempo']
-        },
-        {
-            id: 'repertorio',
-            titulo: 'Repertório',
-            desc: 'Conteúdo sociocultural aplicado à argumentação.',
-            tempo: 'Complementar',
-            cor: 'from-pink-500 to-rose-600',
-            bg: 'from-[#2e0916]/80 to-[#120308]',
-            shadow: 'shadow-[0_0_40px_rgba(236,72,153,0.15)]',
-            icon: (
-                <div className="w-20 h-20 flex items-center justify-center rounded-[2rem] bg-pink-500/10 mb-8 border border-pink-500/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                    <svg className="w-10 h-10 text-pink-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" /></svg>
-                </div>
-            ),
-            etapas: ['Cinema e Sociologia', 'Filosofia Prática', 'Guerra Fria Geopolítica']
-        }
-    ];
+    const [hovered, setHovered] = useState<string | null>(null);
 
     return (
-        <div className="w-full max-w-6xl mx-auto py-8">
-            <div className="mb-16 text-center">
-                <div className="inline-flex items-center gap-2 text-white/40 mb-4 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                    <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
-                    <span className="text-xs font-bold uppercase tracking-widest text-white/70">Jornadas Estruturadas</span>
-                </div>
-                <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-white mb-6">
-                    Trilhas de <br /><span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">Aprendizado.</span>
+        <div className="w-full space-y-6">
+
+            {/* ─── Header ─── */}
+            <div>
+                <p className="section-label mb-1">Aprendizado estruturado</p>
+                <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                    Trilhas de Aprendizado
                 </h1>
-                <p className="text-white/50 text-base max-w-xl mx-auto">Navegue pelas rotas projetadas para solidificar seu conhecimento de forma estratégica, sem se perder no universo de informações.</p>
+                <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                    Rotas projetadas para solidificar seu conhecimento de forma estratégica.
+                </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* ─── Trilhas Grid ─── */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {TRILHAS.map((trilha, idx) => (
                     <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 40 }}
+                        key={trilha.id}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.15, duration: 0.6, ease: 'easeOut' }}
-                        className={`relative rounded-[2.5rem] p-10 h-full flex flex-col bg-gradient-to-b ${trilha.bg} border border-white/10 hover:border-white/20 transition-all cursor-pointer overflow-hidden group ${trilha.shadow}`}
+                        transition={{ delay: idx * 0.1, duration: 0.4 }}
+                        onMouseEnter={() => setHovered(trilha.id)}
+                        onMouseLeave={() => setHovered(null)}
+                        className="relative flex flex-col rounded-2xl border transition-all duration-300"
+                        style={{
+                            background: hovered === trilha.id
+                                ? `${trilha.bg}`
+                                : 'var(--bg-surface)',
+                            borderColor: hovered === trilha.id ? trilha.border : 'var(--border)',
+                            boxShadow: hovered === trilha.id ? `0 8px 32px rgba(0,0,0,0.3)` : 'none',
+                        }}
                     >
-                        {/* Elegant minimalist bg effect */}
-                        <div className={`absolute top-0 right-0 w-[200%] h-[200%] bg-gradient-to-bl ${trilha.cor} opacity-5 rounded-full blur-[100px] group-hover:opacity-15 transition-opacity duration-700 pointer-events-none -translate-y-1/2 translate-x-1/2`} />
+                        {/* Progress indicator top */}
+                        {trilha.progress > 0 && (
+                            <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${trilha.progress}%` }}
+                                    transition={{ delay: idx * 0.1 + 0.3, duration: 0.8 }}
+                                    className="h-full"
+                                    style={{ background: trilha.color }}
+                                />
+                            </div>
+                        )}
 
-                        {trilha.icon}
+                        <div className="p-5 flex flex-col flex-1">
+                            {/* Icon + Tag */}
+                            <div className="flex items-start justify-between mb-4">
+                                <div
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center"
+                                    style={{ background: `${trilha.color}14`, border: `1px solid ${trilha.border}`, color: trilha.color }}
+                                >
+                                    {trilha.icon}
+                                </div>
+                                <TagBadge label={trilha.tag} color={trilha.color} />
+                            </div>
 
-                        <div className="relative z-10 flex-1 flex flex-col">
-                            <h2 className="text-3xl font-black text-white uppercase tracking-tight mb-3 leading-none">{trilha.titulo}</h2>
-                            <p className="text-sm text-white/50 leading-relaxed mb-8 flex-1">
+                            {/* Title + Desc */}
+                            <h2 className="font-bold text-base mb-1.5" style={{ color: 'var(--text-primary)' }}>
+                                {trilha.titulo}
+                            </h2>
+                            <p className="text-xs leading-relaxed mb-5 flex-1" style={{ color: 'var(--text-muted)' }}>
                                 {trilha.desc}
                             </p>
 
-                            <div className="space-y-4 mb-10 mt-auto">
+                            {/* Steps */}
+                            <div className="space-y-2 mb-5">
                                 {trilha.etapas.map((etapa, eIdx) => (
-                                    <div key={eIdx} className="flex items-center gap-3">
-                                        <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${trilha.cor} shadow-[0_0_10px_currentColor]`} />
-                                        <span className="text-xs text-white/70 font-medium tracking-wide uppercase">{etapa}</span>
+                                    <div key={eIdx} className="flex items-center gap-2.5">
+                                        <div
+                                            className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0"
+                                            style={{
+                                                background: etapa.done ? `${trilha.color}20` : 'var(--bg-elevated)',
+                                                border: `1px solid ${etapa.done ? trilha.color : 'var(--border)'}`,
+                                            }}
+                                        >
+                                            {etapa.done && (
+                                                <svg width="9" height="9" fill="none" viewBox="0 0 24 24" stroke={trilha.color} strokeWidth={3}>
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <span
+                                            className="text-xs"
+                                            style={{
+                                                color: etapa.done ? 'var(--text-secondary)' : 'var(--text-muted)',
+                                                textDecoration: etapa.done ? 'none' : 'none',
+                                            }}
+                                        >
+                                            {etapa.label}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
 
-                            <button className="w-full relative overflow-hidden py-4 rounded-2xl border border-white/10 text-white font-black text-xs uppercase tracking-widest transition-all group-hover:border-transparent">
-                                <span className="relative z-10">Desbloquear Caminho</span>
-                                <div className={`absolute inset-0 bg-gradient-to-r ${trilha.cor} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                            {/* Progress */}
+                            {trilha.progress > 0 && (
+                                <div className="mb-4">
+                                    <div className="flex justify-between text-[10px] mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                                        <span>Progresso</span>
+                                        <span style={{ color: trilha.color }}>{trilha.progress}%</span>
+                                    </div>
+                                    <div className="progress-bar">
+                                        <motion.div
+                                            className="progress-bar-fill"
+                                            style={{ background: trilha.color }}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${trilha.progress}%` }}
+                                            transition={{ delay: idx * 0.1 + 0.5, duration: 0.7 }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* CTA */}
+                            <button
+                                className="w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+                                style={trilha.progress > 0 ? {
+                                    background: `${trilha.color}18`,
+                                    color: trilha.color,
+                                    border: `1px solid ${trilha.border}`,
+                                } : {
+                                    background: 'var(--bg-elevated)',
+                                    color: 'var(--text-secondary)',
+                                    border: '1px solid var(--border)',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.background = trilha.color;
+                                    e.currentTarget.style.color = 'white';
+                                    e.currentTarget.style.borderColor = trilha.color;
+                                }}
+                                onMouseLeave={e => {
+                                    if (trilha.progress > 0) {
+                                        e.currentTarget.style.background = `${trilha.color}18`;
+                                        e.currentTarget.style.color = trilha.color;
+                                        e.currentTarget.style.borderColor = trilha.border;
+                                    } else {
+                                        e.currentTarget.style.background = 'var(--bg-elevated)';
+                                        e.currentTarget.style.color = 'var(--text-secondary)';
+                                        e.currentTarget.style.borderColor = 'var(--border)';
+                                    }
+                                }}
+                            >
+                                {trilha.progress > 0 ? 'Continuar trilha' : 'Iniciar trilha'}
                             </button>
                         </div>
                     </motion.div>
                 ))}
+            </div>
+
+            {/* ─── Info Banner ─── */}
+            <div
+                className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl border"
+                style={{
+                    background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(236,72,153,0.04))',
+                    borderColor: 'rgba(124,58,237,0.18)',
+                }}
+            >
+                <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(124,58,237,0.15)' }}
+                >
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#9d5cf6" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
+                    </svg>
+                </div>
+                <div className="flex-1">
+                    <p className="font-semibold text-sm mb-0.5" style={{ color: 'var(--text-primary)' }}>
+                        Novas trilhas em breve
+                    </p>
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        Estamos preparando trilhas temáticas especializadas para Redação, Ciências da Natureza e muito mais.
+                    </p>
+                </div>
+                <button
+                    onClick={() => onNavigate('catalog')}
+                    className="btn-ghost flex-shrink-0 text-xs py-2"
+                >
+                    Ver biblioteca
+                </button>
             </div>
         </div>
     );

@@ -9,18 +9,41 @@ interface Props {
     onNavigate: (v: string, id?: string) => void;
 }
 
-const MENU_ITEMS = [
-    { id: 'dashboard', label: 'QG do Aluno', icon: '🏠' },
-    { id: 'trilhas', label: 'Jornadas (Trilhas)', icon: '🗺️' },
-    { id: 'diagnostico', label: 'GPS (Diagnóstico)', icon: '🧭' },
-    { id: 'catalog', label: 'Biblioteca Virtual', icon: '📚' }
+const NAV_ITEMS = [
+    {
+        id: 'dashboard', label: 'Painel', icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+            </svg>
+        )
+    },
+    {
+        id: 'trilhas', label: 'Trilhas', icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+        )
+    },
+    {
+        id: 'diagnostico', label: 'Diagnóstico', icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+        )
+    },
+    {
+        id: 'catalog', label: 'Biblioteca', icon: (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+        )
+    },
 ];
 
 export default function Layout({ children, currentView, onNavigate }: Props) {
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [cmdOpen, setCmdOpen] = useState(false);
 
-    // Global keyboard listener for explicitly ctrl+k
     React.useEffect(() => {
         const handleCmdK = (e: KeyboardEvent) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
@@ -46,7 +69,7 @@ export default function Layout({ children, currentView, onNavigate }: Props) {
         a.href = url;
         a.download = `desdobre_backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
-        toast.success("Backup exportado com sucesso!");
+        toast.success('Backup exportado com sucesso!');
     };
 
     const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,136 +79,272 @@ export default function Layout({ children, currentView, onNavigate }: Props) {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target?.result as string);
-                Object.keys(data).forEach(k => {
-                    localStorage.setItem(k, data[k]);
-                });
-                toast.success('✅ Dados importados! A página será recarregada.');
+                Object.keys(data).forEach(k => localStorage.setItem(k, data[k]));
+                toast.success('Dados importados! A página será recarregada.');
                 setTimeout(() => window.location.reload(), 1500);
-            } catch (err) {
-                toast.error('❌ Arquivo inválido.');
+            } catch {
+                toast.error('Arquivo inválido.');
             }
         };
         reader.readAsText(file);
     };
 
-    return (
-        <div className="flex bg-[#0d0f1a] min-h-screen text-white font-sans overflow-hidden" style={{ backgroundImage: 'radial-gradient(circle at top center, #1a1b32 0%, #0d0f1a 80%)' }}>
-            <Toaster richColors position="bottom-right" theme="dark" />
+    const isActive = (id: string) =>
+        currentView === id || (currentView === 'season' && id === 'catalog') || (currentView.startsWith('subject_') && id === 'catalog');
 
-            {/* Desktop Sidebar (hidden on mobile) */}
-            <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-[#05070f]/50 backdrop-blur-3xl shrink-0 h-screen sticky top-0">
-                <div className="p-8">
-                    <h1 className="text-xl font-black tracking-[-0.05em] uppercase cursor-pointer" onClick={() => onNavigate('dashboard')}>
-                        <span className="text-purple-500 italic">D</span>esdobre<span className="text-pink-500">.</span>
-                    </h1>
+    return (
+        <div className="flex min-h-screen overflow-hidden" style={{ background: 'var(--bg-base)' }}>
+            <Toaster
+                richColors
+                position="bottom-right"
+                theme="dark"
+                toastOptions={{
+                    style: {
+                        background: 'var(--bg-elevated)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-primary)',
+                    }
+                }}
+            />
+
+            {/* ─── Desktop Sidebar ─── */}
+            <aside
+                className="hidden md:flex flex-col w-60 shrink-0 h-screen sticky top-0 border-r"
+                style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)' }}
+            >
+                {/* Logo */}
+                <div className="px-5 py-5 border-b" style={{ borderColor: 'var(--border)' }}>
+                    <button
+                        onClick={() => onNavigate('dashboard')}
+                        className="flex items-center gap-2.5 group"
+                    >
+                        <div
+                            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: 'var(--brand)' }}
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                        <span
+                            className="font-bold text-sm tracking-tight"
+                            style={{ color: 'var(--text-primary)' }}
+                        >
+                            Desdobre
+                        </span>
+                    </button>
                 </div>
 
-                <div className="flex-1 px-4 py-2 space-y-2">
+                {/* Search */}
+                <div className="px-3 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
                     <button
                         onClick={() => setCmdOpen(true)}
-                        className="w-full flex items-center justify-between px-4 py-3 bg-white/5 border border-white/10 text-white/50 text-xs font-bold rounded-xl mb-6 hover:bg-white/10 transition-colors group"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all"
+                        style={{
+                            background: 'var(--bg-base)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-muted)',
+                        }}
                     >
-                        <span className="flex items-center gap-2"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg> Buscar</span>
-                        <div className="flex gap-1">
-                            <span className="px-1.5 py-0.5 rounded bg-black/50 border border-white/10">Ctrl</span>
-                            <span className="px-1.5 py-0.5 rounded bg-black/50 border border-white/10">K</span>
-                        </div>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <span className="flex-1 text-xs">Buscar...</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
+                            ⌘K
+                        </span>
                     </button>
+                </div>
 
-                    {MENU_ITEMS.map(item => {
-                        const active = currentView === item.id || (currentView === 'season' && item.id === 'catalog');
+                {/* Nav */}
+                <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto hide-scrollbar">
+                    <p className="section-label px-3 mb-2 mt-1">Navegar</p>
+                    {NAV_ITEMS.map(item => {
+                        const active = isActive(item.id);
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => onNavigate(item.id)}
-                                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 text-sm font-bold uppercase tracking-widest ${active
-                                    ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/10 text-white border-l-2 border-purple-500'
-                                    : 'text-white/40 hover:text-white hover:bg-white/5 border-l-2 border-transparent'
-                                    }`}
+                                className="nav-item w-full"
+                                style={active ? {
+                                    color: 'var(--text-primary)',
+                                    background: 'rgba(124,58,237,0.1)',
+                                    borderLeft: '2px solid var(--brand)',
+                                    paddingLeft: 'calc(0.75rem - 2px)',
+                                } : {}}
                             >
-                                <span className={`text-xl ${active ? 'opacity-100' : 'opacity-60'}`}>{item.icon}</span>
-                                {item.label}
+                                <span style={{ color: active ? 'var(--brand-light)' : 'var(--text-muted)' }}>
+                                    {item.icon}
+                                </span>
+                                <span className="text-sm">{item.label}</span>
                             </button>
                         );
                     })}
-                </div>
+                </nav>
 
-                <div className="p-6 border-t border-white/5">
+                {/* Bottom */}
+                <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
                     <button
                         onClick={() => setSettingsOpen(true)}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-widest text-white/30 hover:text-white hover:bg-white/5 transition-all"
+                        className="nav-item w-full"
                     >
-                        <span className="text-lg">⚙️</span> Definições
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)' }}>
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                        </svg>
+                        <span className="text-sm">Configurações</span>
                     </button>
                 </div>
             </aside>
 
-            {/* Main Content Area */}
-            <main className="flex-1 relative overflow-y-auto h-screen pb-24 md:pb-0 pt-16 md:pt-0 hide-scrollbar scroll-smooth">
-                {/* Mobile top nav simple search trigger */}
-                <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#070910]/95 backdrop-blur-xl border-b border-white/5 h-14 px-4 flex items-center justify-between">
-                    <h1 className="text-xl font-black tracking-[-0.05em] uppercase" onClick={() => onNavigate('dashboard')}>
-                        <span className="text-purple-500 italic">D</span>esdobre<span className="text-pink-500">.</span>
-                    </h1>
-                    <button onClick={() => setCmdOpen(true)} className="w-10 h-10 rounded-full bg-transparent flex items-center justify-end text-white/50">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            {/* ─── Main ─── */}
+            <main
+                className="flex-1 relative overflow-y-auto h-screen hide-scrollbar"
+                style={{ paddingBottom: '5rem' }}
+            >
+                {/* Mobile Topbar */}
+                <header
+                    className="md:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-14 border-b"
+                    style={{
+                        background: 'rgba(10,10,15,0.92)',
+                        backdropFilter: 'blur(16px)',
+                        borderColor: 'var(--border)',
+                    }}
+                >
+                    <button
+                        onClick={() => onNavigate('dashboard')}
+                        className="flex items-center gap-2"
+                    >
+                        <div
+                            className="w-6 h-6 rounded-md flex items-center justify-center"
+                            style={{ background: 'var(--brand)' }}
+                        >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                        <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                            Desdobre
+                        </span>
                     </button>
-                </div>
+                    <button
+                        onClick={() => setCmdOpen(true)}
+                        className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                        style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}
+                    >
+                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </header>
 
-                <div className="p-4 md:p-12 lg:p-16 max-w-[1600px] mx-auto min-h-[100vh]">
+                {/* Page content */}
+                <div className="px-4 py-6 md:px-8 md:py-8 lg:px-10 max-w-[1400px] mx-auto">
                     {children}
                 </div>
             </main>
 
-            {/* Mobile Bottom Bar (App-Style pinned bottom) */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#080911]/90 backdrop-blur-xl border-t border-white/10 pb-safe pt-2 px-2 flex justify-around items-center h-16">
-                {MENU_ITEMS.slice(0, 4).map(item => {
-                    const active = currentView === item.id || (currentView === 'season' && item.id === 'catalog');
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => onNavigate(item.id)}
-                            className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 w-1/5 ${active ? 'text-purple-400' : 'text-white/40 hover:text-white'
-                                }`}
-                        >
-                            <span className={`text-xl mb-1 transition-transform ${active ? 'scale-110' : 'scale-90 hover:scale-100'}`}>{item.icon}</span>
-                            <span className="text-[9px] md:text-xs font-bold uppercase tracking-widest truncate w-full text-center mt-0.5">{item.label.split(' ')[0]}</span>
-                            {active && <motion.div layoutId="navIndicator" className="w-1 h-1 rounded-full bg-purple-500 mt-1 absolute bottom-1" />}
-                        </button>
-                    );
-                })}
-                <button
-                    onClick={() => setSettingsOpen(true)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-300 w-1/5 text-white/40 hover:text-white`}
-                >
-                    <span className="text-xl mb-1 scale-90 hover:scale-100">⚙️</span>
-                    <span className="text-[9px] md:text-xs font-bold uppercase tracking-widest truncate w-full text-center mt-0.5">Ajustes</span>
-                </button>
+            {/* ─── Mobile Bottom Nav ─── */}
+            <nav
+                className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t pb-safe"
+                style={{
+                    background: 'rgba(10,10,15,0.96)',
+                    backdropFilter: 'blur(20px)',
+                    borderColor: 'var(--border)',
+                }}
+            >
+                <div className="flex items-center justify-around pt-2 pb-1 px-1">
+                    {NAV_ITEMS.map(item => {
+                        const active = isActive(item.id);
+                        return (
+                            <button
+                                key={item.id}
+                                onClick={() => onNavigate(item.id)}
+                                className="flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-xl transition-all min-w-[3.5rem]"
+                                style={{ color: active ? 'var(--brand-light)' : 'var(--text-muted)' }}
+                            >
+                                <span style={{ transform: active ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s' }}>
+                                    {item.icon}
+                                </span>
+                                <span className="text-[10px] font-semibold truncate max-w-full">
+                                    {item.label}
+                                </span>
+                                {active && (
+                                    <motion.div
+                                        layoutId="mobileNav"
+                                        className="absolute bottom-1 w-4 h-0.5 rounded-full"
+                                        style={{ background: 'var(--brand)' }}
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                    <button
+                        onClick={() => setSettingsOpen(true)}
+                        className="flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-xl transition-all min-w-[3.5rem]"
+                        style={{ color: 'var(--text-muted)' }}
+                    >
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                        <span className="text-[10px] font-semibold">Config.</span>
+                    </button>
+                </div>
             </nav>
 
             {/* Command Palette */}
             <CommandPalette isOpen={cmdOpen} onClose={() => setCmdOpen(false)} onNavigate={onNavigate} />
 
-            {/* Settings Modal (Offline sync) */}
+            {/* Settings Modal */}
             <AnimatePresence>
                 {settingsOpen && (
-                    <div className="fixed inset-0 z-[99999] flex items-center justify-center px-4" onClick={() => setSettingsOpen(false)}>
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+                    <div
+                        className="fixed inset-0 z-[99999] flex items-center justify-center px-4"
+                        onClick={() => setSettingsOpen(false)}
+                    >
                         <motion.div
-                            initial={{ y: 50, opacity: 0, scale: 0.95 }}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ y: 24, opacity: 0, scale: 0.97 }}
                             animate={{ y: 0, opacity: 1, scale: 1 }}
-                            exit={{ y: 50, opacity: 0, scale: 0.95 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-gradient-to-b from-[#151a2e] to-[#0b0d18] w-full max-w-sm rounded-[2rem] border border-white/10 shadow-[0_0_50px_rgba(168,85,247,0.1)] p-8 relative overflow-hidden"
+                            exit={{ y: 24, opacity: 0, scale: 0.97 }}
+                            transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                            onClick={e => e.stopPropagation()}
+                            className="relative w-full max-w-sm rounded-2xl p-6 border shadow-2xl"
+                            style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border-hover)' }}
                         >
-                            <button onClick={() => setSettingsOpen(false)} className="absolute top-6 right-6 text-white/30 hover:text-white">✕</button>
-                            <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Definições</h2>
-                            <p className="text-xs text-white/40 mb-8 leading-relaxed">Faça o backup de todo o seu progresso local e retome em outro dispositivo. Todos os seus rastreamentos vivem localmente em seu navegador.</p>
+                            <button
+                                onClick={() => setSettingsOpen(false)}
+                                className="absolute top-4 right-4 w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
+                                style={{ background: 'var(--bg-overlay)', color: 'var(--text-muted)' }}
+                            >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
 
-                            <div className="space-y-4">
-                                <button onClick={exportData} className="w-full py-4 px-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:shadow-purple-500/25 transition-all text-left flex justify-between items-center group">
-                                    <span>Exportar Backup (.json)</span>
-                                    <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
+                            <h2 className="text-base font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+                                Configurações
+                            </h2>
+                            <p className="text-xs mb-6 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                                Exporte ou importe seu progresso. Todos os dados são armazenados localmente no seu navegador.
+                            </p>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={exportData}
+                                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm text-white transition-all"
+                                    style={{ background: 'var(--brand)' }}
+                                >
+                                    <span>Exportar backup (.json)</span>
+                                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
                                 </button>
 
                                 <div className="relative">
@@ -193,11 +352,16 @@ export default function Layout({ children, currentView, onNavigate }: Props) {
                                         type="file"
                                         accept=".json"
                                         onChange={importData}
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     />
-                                    <div className="w-full py-4 px-6 bg-white/5 border border-white/10 hover:bg-white/10 rounded-2xl text-white/70 font-bold text-xs uppercase tracking-widest transition-all text-left flex justify-between items-center pointer-events-none group">
-                                        <span>Importar Arquivo</span>
-                                        <span className="text-xl group-hover:-translate-y-1 transition-transform">↑</span>
+                                    <div
+                                        className="w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all border pointer-events-none"
+                                        style={{ background: 'var(--bg-surface)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                                    >
+                                        <span>Importar arquivo</span>
+                                        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                        </svg>
                                     </div>
                                 </div>
                             </div>
@@ -205,7 +369,6 @@ export default function Layout({ children, currentView, onNavigate }: Props) {
                     </div>
                 )}
             </AnimatePresence>
-
         </div>
     );
 }

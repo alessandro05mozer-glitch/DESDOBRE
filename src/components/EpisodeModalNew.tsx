@@ -1,18 +1,18 @@
-// EpisodeModalNew.tsx — Modal de Episódio Moderno com Checklist, Quiz e Professor
+// EpisodeModalNew.tsx — Modal de Episódio v2
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { resolveVideo, fetchProfessores } from '../api';
 
-const CORES_MATERIA: Record<string, { bg: string; accent: string; light: string }> = {
-    historia: { bg: 'from-amber-900/40 to-orange-900/20', accent: '#f59e0b', light: 'bg-amber-500/20 text-amber-300' },
-    matematica: { bg: 'from-blue-900/40 to-indigo-900/20', accent: '#3b82f6', light: 'bg-blue-500/20 text-blue-300' },
-    quimica: { bg: 'from-emerald-900/40 to-teal-900/20', accent: '#10b981', light: 'bg-emerald-500/20 text-emerald-300' },
-    biologia: { bg: 'from-lime-900/40 to-green-900/20', accent: '#84cc16', light: 'bg-lime-500/20 text-lime-300' },
-    fisica: { bg: 'from-cyan-900/40 to-blue-900/20', accent: '#06b6d4', light: 'bg-cyan-500/20 text-cyan-300' },
-    geografia: { bg: 'from-teal-900/40 to-cyan-900/20', accent: '#14b8a6', light: 'bg-teal-500/20 text-teal-300' },
-    redacao: { bg: 'from-pink-900/40 to-rose-900/20', accent: '#ec4899', light: 'bg-pink-500/20 text-pink-300' },
-    socfilo: { bg: 'from-purple-900/40 to-violet-900/20', accent: '#a855f7', light: 'bg-purple-500/20 text-purple-300' },
+const CORES_MATERIA: Record<string, { accent: string; bg: string; light: string }> = {
+    historia:   { accent: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  light: 'rgba(245,158,11,0.15)' },
+    matematica: { accent: '#3b82f6', bg: 'rgba(59,130,246,0.08)',  light: 'rgba(59,130,246,0.15)' },
+    quimica:    { accent: '#10b981', bg: 'rgba(16,185,129,0.08)',  light: 'rgba(16,185,129,0.15)' },
+    biologia:   { accent: '#84cc16', bg: 'rgba(132,204,22,0.08)',  light: 'rgba(132,204,22,0.15)' },
+    fisica:     { accent: '#06b6d4', bg: 'rgba(6,182,212,0.08)',   light: 'rgba(6,182,212,0.15)'  },
+    geografia:  { accent: '#14b8a6', bg: 'rgba(20,184,166,0.08)',  light: 'rgba(20,184,166,0.15)' },
+    redacao:    { accent: '#ec4899', bg: 'rgba(236,72,153,0.08)',  light: 'rgba(236,72,153,0.15)' },
+    socfilo:    { accent: '#a855f7', bg: 'rgba(168,85,247,0.08)',  light: 'rgba(168,85,247,0.15)' },
 };
 
 interface Quiz { pergunta: string; alternativas: string[]; correta: number; }
@@ -27,22 +27,18 @@ const STORAGE_PREFIX = 'desdobre_ep_';
 export default function EpisodeModalNew({ episodio, materia, tituloTemporada, onClose }: Props) {
     const cores = CORES_MATERIA[materia] || CORES_MATERIA.historia;
     const [professores, setProfessores] = useState<any[]>([]);
-
-    useEffect(() => {
-        fetchProfessores(materia).then(profs => {
-            if (profs) setProfessores(profs);
-        });
-    }, [materia]);
+    const [profIdx, setProfIdx] = useState(0);
+    const [quizResposta, setQuizResposta] = useState<number | null>(null);
+    const [justCompleted, setJustCompleted] = useState(false);
 
     const [topicosFeitos, setTopicosFeitos] = useState<boolean[]>(() => {
         try {
             const saved = localStorage.getItem(`${STORAGE_PREFIX}${episodio.id}`);
             return saved ? JSON.parse(saved) : new Array(episodio.topicos.length).fill(false);
-        } catch { return new Array(episodio.topicos.length).fill(false); }
+        } catch {
+            return new Array(episodio.topicos.length).fill(false);
+        }
     });
-
-    const [quizResposta, setQuizResposta] = useState<number | null>(null);
-    const [profIdx, setProfIdx] = useState(0);
 
     const concluidos = topicosFeitos.filter(Boolean).length;
     const total = episodio.topicos.length;
@@ -50,29 +46,28 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
     const tudo100 = pct === 100;
 
     useEffect(() => {
+        fetchProfessores(materia).then(profs => { if (profs) setProfessores(profs); });
+    }, [materia]);
+
+    useEffect(() => {
         localStorage.setItem(`${STORAGE_PREFIX}${episodio.id}`, JSON.stringify(topicosFeitos));
     }, [topicosFeitos, episodio.id]);
 
-    // Fechar com Escape
     useEffect(() => {
         const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, [onClose]);
 
-    const [justCompleted, setJustCompleted] = useState(false);
-
     const toggleTopico = (i: number) => {
         const next = [...topicosFeitos];
         next[i] = !next[i];
-
         const newConcluidos = next.filter(Boolean).length;
         if (newConcluidos === total && concluidos < total) {
-            toast.success("🎉 Episódio concluído e registrado no seu QG!");
+            toast.success('Episódio concluído! Bom trabalho!');
             setJustCompleted(true);
             setTimeout(() => setJustCompleted(false), 3000);
         }
-
         setTopicosFeitos(next);
     };
 
@@ -90,158 +85,208 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[500] bg-black/85 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-6"
+                className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center p-0 sm:p-4"
+                style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(12px)' }}
                 onClick={onClose}
             >
                 <motion.div
-                    initial={{ y: 100, opacity: 0, scale: 0.97 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    exit={{ y: 100, opacity: 0 }}
-                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    initial={{ y: 60, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 60, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 28, stiffness: 320 }}
                     onClick={e => e.stopPropagation()}
-                    className="w-full h-[95vh] sm:max-w-2xl sm:h-auto sm:max-h-[88vh] bg-[#0a0a0a] rounded-t-3xl sm:rounded-3xl border border-white/10 overflow-hidden flex flex-col relative"
+                    className="w-full h-[92vh] sm:max-w-lg sm:h-auto sm:max-h-[86vh] flex flex-col overflow-hidden rounded-t-3xl sm:rounded-2xl border"
+                    style={{
+                        background: 'var(--bg-surface)',
+                        borderColor: 'var(--border-hover)',
+                    }}
                 >
-                    {/* Confetti particles */}
+                    {/* Confetti */}
                     <AnimatePresence>
                         {justCompleted && (
-                            <div className="absolute inset-x-0 top-0 h-full pointer-events-none z-50 overflow-hidden">
-                                {Array.from({ length: 25 }).map((_, i) => (
+                            <div className="absolute inset-x-0 top-0 h-full pointer-events-none z-50 overflow-hidden rounded-t-3xl sm:rounded-2xl">
+                                {Array.from({ length: 20 }).map((_, i) => (
                                     <motion.div
                                         key={i}
-                                        initial={{ y: -20, x: `${Math.random() * 100}%`, opacity: 1, scale: Math.random() + 0.5 }}
-                                        animate={{ y: 800, x: `+=${(Math.random() - 0.5) * 200}`, opacity: 0, rotate: Math.random() * 360 }}
-                                        transition={{ duration: 1.5 + Math.random() * 1.5, ease: 'easeOut' }}
-                                        className="absolute top-0 w-3 h-3 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-                                        style={{ background: [cores.accent, '#f472b6', '#34d399', '#fbbf24'][Math.floor(Math.random() * 4)] }}
+                                        initial={{ y: -10, x: `${Math.random() * 100}%`, opacity: 1 }}
+                                        animate={{ y: 600, opacity: 0, rotate: Math.random() * 360 }}
+                                        transition={{ duration: 1.5 + Math.random(), ease: 'easeOut' }}
+                                        className="absolute top-0 w-2 h-2 rounded-full"
+                                        style={{ background: [cores.accent, '#ec4899', '#10b981', '#f59e0b'][i % 4] }}
                                     />
                                 ))}
                             </div>
                         )}
                     </AnimatePresence>
 
-                    {/* Mobile drag handle */}
-                    <div className="w-full flex items-center justify-center pt-3 pb-1 sm:hidden">
-                        <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+                    {/* Drag handle (mobile) */}
+                    <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
+                        <div className="w-10 h-1 rounded-full" style={{ background: 'var(--border-hover)' }} />
                     </div>
 
                     {/* Header */}
-                    <div className={`relative p-6 pt-2 sm:pt-6 bg-gradient-to-br ${cores.bg} border-b border-white/5`}>
-                        <div className="flex items-start justify-between gap-4">
+                    <div
+                        className="flex-shrink-0 px-5 py-4 border-b"
+                        style={{
+                            background: cores.bg,
+                            borderColor: 'var(--border)',
+                        }}
+                    >
+                        <div className="flex items-start gap-3">
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${cores.light}`}>
+                                <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                                    <span
+                                        className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                                        style={{ background: cores.light, color: cores.accent }}
+                                    >
                                         {tituloTemporada}
                                     </span>
-                                    <span className="text-[10px] text-white/40 font-bold">{episodio.duracao}</span>
+                                    <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                                        {episodio.duracao}
+                                    </span>
                                 </div>
-                                <h2 className="text-xl md:text-2xl font-black text-white leading-tight uppercase tracking-tight line-clamp-2 md:line-clamp-none" id="modal-title">
+                                <h2
+                                    className="font-bold text-base leading-tight line-clamp-2"
+                                    style={{ color: 'var(--text-primary)' }}
+                                >
                                     {episodio.titulo}
                                 </h2>
-                                <div className="flex items-center gap-3 mt-3">
-                                    <span className="text-xs text-white/50">{concluidos}/{total} tópicos</span>
+                                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                                    {concluidos}/{total} tópicos
                                     {tudo100 && (
-                                        <motion.span
-                                            initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                            className="text-xs font-black text-green-400 flex items-center gap-1"
-                                        >
-                                            🎉 Concluído!
-                                        </motion.span>
+                                        <span className="ml-2 font-semibold" style={{ color: '#10b981' }}>
+                                            · Concluido!
+                                        </span>
                                     )}
-                                </div>
+                                </p>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all flex-none"
+                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                                style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}
+                                onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+                                onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
                             >
-                                ✕
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
 
-                        {/* Barra de progresso */}
-                        <div className="mt-4 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        {/* Progress bar */}
+                        <div className="mt-3 progress-bar">
                             <motion.div
-                                className="h-full rounded-full"
+                                className="progress-bar-fill"
                                 style={{ background: cores.accent }}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${pct}%` }}
                                 transition={{ duration: 0.6, ease: 'easeOut' }}
                             />
                         </div>
-                        <div className="flex justify-between mt-1">
-                            <span className="text-[10px] text-white/30">Progresso</span>
-                            <span className="text-[10px] font-black" style={{ color: cores.accent }}>{pct}%</span>
-                        </div>
                     </div>
 
-                    {/* Conteúdo (scroll) */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-6">
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto hide-scrollbar p-5 space-y-5">
 
-                        {/* Botões de Assistir */}
-                        <div className="space-y-3">
+                        {/* Watch buttons */}
+                        <div className="space-y-2">
                             {professorAtual && (
                                 <motion.button
-                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                    whileHover={{ scale: 1.01 }}
+                                    whileTap={{ scale: 0.99 }}
                                     onClick={() => assistir(profIdx)}
-                                    className="w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all"
-                                    style={{ borderColor: cores.accent + '60', background: cores.accent + '15' }}
+                                    className="w-full flex items-center gap-3 p-4 rounded-xl border transition-all text-left"
+                                    style={{
+                                        background: cores.bg,
+                                        borderColor: `${cores.accent}40`,
+                                    }}
                                 >
-                                    <span className="text-2xl">{professorAtual.avatar}</span>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-black text-white">Assistir com {professorAtual.nome}</span>
-                                            <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full text-yellow-400 bg-yellow-400/10 border border-yellow-400/20">
-                                                ⭐ #{profIdx + 1} prioridade
-                                            </span>
-                                        </div>
-                                        <span className="text-xs text-white/40">{professorAtual.canal} · YouTube</span>
+                                    <div
+                                        className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
+                                        style={{ background: cores.light }}
+                                    >
+                                        {professorAtual.avatar}
                                     </div>
-                                    <svg className="w-5 h-5 text-white/50 flex-none" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z" />
-                                    </svg>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                                            {professorAtual.nome}
+                                        </p>
+                                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                            {professorAtual.canal} · YouTube
+                                        </p>
+                                    </div>
+                                    <div
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                        style={{ background: cores.accent, color: 'white' }}
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M8 5v14l11-7z" />
+                                        </svg>
+                                    </div>
                                 </motion.button>
                             )}
 
-                            {proximoProf && profIdx !== (profIdx + 1) % professores.length && (
+                            {proximoProf && (
                                 <button
                                     onClick={() => { setProfIdx((profIdx + 1) % professores.length); assistir((profIdx + 1) % professores.length); }}
-                                    className="w-full flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/3 hover:bg-white/8 transition-all text-left"
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border transition-all text-left"
+                                    style={{ borderColor: 'var(--border)', background: 'transparent' }}
+                                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+                                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                 >
-                                    <span className="text-lg">{proximoProf.avatar}</span>
-                                    <span className="text-sm text-white/60 font-bold">Outro professor: {proximoProf.nome}</span>
+                                    <span className="text-base flex-shrink-0">{proximoProf.avatar}</span>
+                                    <span className="text-sm flex-1" style={{ color: 'var(--text-secondary)' }}>
+                                        {proximoProf.nome}
+                                    </span>
+                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Alt.</span>
                                 </button>
                             )}
                         </div>
 
-                        {/* Checklist de Tópicos */}
+                        {/* Divider */}
+                        <div className="border-t" style={{ borderColor: 'var(--border)' }} />
+
+                        {/* Checklist */}
                         <div>
-                            <h3 className="text-[11px] font-black uppercase tracking-widest text-white/40 mb-3">
-                                📋 Tópicos do Episódio
-                            </h3>
-                            <div className="space-y-2">
+                            <p className="section-label mb-3">Tópicos do episódio</p>
+                            <div className="space-y-1.5">
                                 {episodio.topicos.map((topico, i) => (
                                     <motion.button
                                         key={i}
                                         onClick={() => toggleTopico(i)}
-                                        whileHover={{ x: 4 }}
-                                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all text-left group"
+                                        whileHover={{ x: 2 }}
+                                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-elevated)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                                     >
                                         <div
-                                            className="w-5 h-5 rounded-md border-2 flex items-center justify-center flex-none transition-all duration-200"
-                                            style={{
-                                                borderColor: topicosFeitos[i] ? cores.accent : 'rgba(255,255,255,0.2)',
-                                                background: topicosFeitos[i] ? cores.accent + '30' : 'transparent',
-                                            }}
+                                            className="check-box flex-shrink-0"
+                                            style={topicosFeitos[i] ? {
+                                                borderColor: cores.accent,
+                                                background: `${cores.accent}20`,
+                                            } : {}}
                                         >
                                             {topicosFeitos[i] && (
                                                 <motion.svg
-                                                    initial={{ scale: 0 }} animate={{ scale: 1 }}
-                                                    className="w-3 h-3" fill="none" stroke={cores.accent} strokeWidth={3} viewBox="0 0 24 24"
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    width="9" height="9"
+                                                    fill="none"
+                                                    stroke={cores.accent}
+                                                    strokeWidth={3}
+                                                    viewBox="0 0 24 24"
                                                 >
                                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                                 </motion.svg>
                                             )}
                                         </div>
-                                        <span className={`text-sm transition-all duration-200 ${topicosFeitos[i] ? 'line-through text-white/30' : 'text-white/80'}`}>
+                                        <span
+                                            className="text-sm transition-all"
+                                            style={{
+                                                color: topicosFeitos[i] ? 'var(--text-muted)' : 'var(--text-secondary)',
+                                                textDecoration: topicosFeitos[i] ? 'line-through' : 'none',
+                                            }}
+                                        >
                                             {topico}
                                         </span>
                                     </motion.button>
@@ -249,44 +294,57 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                             </div>
                         </div>
 
-                        {/* Descrição */}
-                        <div className="p-4 rounded-2xl bg-white/3 border border-white/5">
-                            <h3 className="text-[11px] font-black uppercase tracking-widest text-white/40 mb-2">📖 Sobre este episódio</h3>
-                            <p className="text-sm text-white/70 leading-relaxed">{episodio.descricao}</p>
+                        {/* Description */}
+                        <div
+                            className="p-4 rounded-xl border"
+                            style={{ background: 'var(--bg-base)', borderColor: 'var(--border)' }}
+                        >
+                            <p className="section-label mb-2">Sobre este episódio</p>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                                {episodio.descricao}
+                            </p>
                         </div>
 
                         {/* Tags */}
                         {episodio.tags && episodio.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-1.5">
                                 {episodio.tags.map((tag, i) => (
-                                    <span key={i} className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-white/50">
-                                        {tag}
-                                    </span>
+                                    <span key={i} className="badge badge-neutral">{tag}</span>
                                 ))}
                             </div>
                         )}
 
                         {/* Quiz */}
                         {episodio.quiz && (
-                            <div className="p-5 rounded-2xl bg-white/3 border border-white/10">
-                                <h3 className="text-[11px] font-black uppercase tracking-widest text-white/40 mb-3">🧠 Quiz Rápido</h3>
-                                <p className="text-sm font-bold text-white/90 mb-4">{episodio.quiz.pergunta}</p>
+                            <div
+                                className="p-4 rounded-xl border"
+                                style={{ background: 'var(--bg-elevated)', borderColor: 'var(--border)' }}
+                            >
+                                <p className="section-label mb-3">Quiz rápido</p>
+                                <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text-primary)' }}>
+                                    {episodio.quiz.pergunta}
+                                </p>
                                 <div className="space-y-2">
                                     {episodio.quiz.alternativas.map((alt, i) => {
                                         const isCorreta = i === episodio.quiz!.correta;
                                         const isEscolhida = quizResposta === i;
-                                        let cls = 'border-white/10 bg-white/3 text-white/60 hover:bg-white/8';
+                                        let bg = 'var(--bg-surface)';
+                                        let border = 'var(--border)';
+                                        let color = 'var(--text-secondary)';
                                         if (quizResposta !== null) {
-                                            if (isCorreta) cls = 'border-green-500/60 bg-green-500/15 text-green-400';
-                                            else if (isEscolhida) cls = 'border-red-500/60 bg-red-500/15 text-red-400';
-                                            else cls = 'border-white/5 bg-white/2 text-white/30';
+                                            if (isCorreta) { bg = 'rgba(16,185,129,0.1)'; border = '#10b981'; color = '#10b981'; }
+                                            else if (isEscolhida) { bg = 'rgba(239,68,68,0.1)'; border = '#ef4444'; color = '#ef4444'; }
+                                            else { color = 'var(--text-muted)'; }
                                         }
                                         return (
                                             <button
                                                 key={i}
                                                 onClick={() => { if (quizResposta === null) setQuizResposta(i); }}
                                                 disabled={quizResposta !== null}
-                                                className={`w-full text-left p-3 rounded-xl border text-sm font-bold transition-all ${cls}`}
+                                                className="w-full text-left px-3 py-2.5 rounded-lg border text-sm font-medium transition-all"
+                                                style={{ background: bg, borderColor: border, color }}
+                                                onMouseEnter={e => { if (quizResposta === null) e.currentTarget.style.background = 'var(--bg-elevated)'; }}
+                                                onMouseLeave={e => { if (quizResposta === null) e.currentTarget.style.background = bg; }}
                                             >
                                                 {alt}
                                             </button>
@@ -295,28 +353,45 @@ export default function EpisodeModalNew({ episodio, materia, tituloTemporada, on
                                 </div>
                                 {quizResposta !== null && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 8 }}
+                                        initial={{ opacity: 0, y: 6 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`mt-3 text-xs font-black text-center py-2 rounded-xl ${quizResposta === episodio.quiz.correta ? 'text-green-400 bg-green-400/10' : 'text-red-400 bg-red-400/10'}`}
+                                        className="mt-3 text-xs font-semibold text-center py-2 rounded-lg"
+                                        style={quizResposta === episodio.quiz.correta
+                                            ? { background: 'rgba(16,185,129,0.1)', color: '#10b981' }
+                                            : { background: 'rgba(239,68,68,0.1)', color: '#ef4444' }
+                                        }
                                     >
-                                        {quizResposta === episodio.quiz.correta ? '✅ Correto! Muito bem!' : `❌ Incorreto. A resposta certa é: ${episodio.quiz.alternativas[episodio.quiz.correta]}`}
+                                        {quizResposta === episodio.quiz.correta
+                                            ? 'Correto! Muito bem!'
+                                            : `Incorreto. Resposta certa: ${episodio.quiz.alternativas[episodio.quiz.correta]}`
+                                        }
                                     </motion.div>
                                 )}
                             </div>
                         )}
 
-                        {/* Celebração */}
+                        {/* Completion banner */}
                         {tudo100 && (
                             <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
+                                initial={{ scale: 0.95, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
-                                className="p-5 rounded-2xl bg-gradient-to-br from-green-900/40 to-emerald-900/20 border border-green-500/20 text-center"
+                                className="p-4 rounded-xl text-center border"
+                                style={{
+                                    background: 'rgba(16,185,129,0.08)',
+                                    borderColor: 'rgba(16,185,129,0.25)',
+                                }}
                             >
-                                <div className="text-4xl mb-2">🎉</div>
-                                <p className="text-sm font-black text-green-400 uppercase tracking-wide">Episódio Concluído!</p>
-                                <p className="text-xs text-white/50 mt-1">Você dominou todos os tópicos deste episódio.</p>
+                                <p className="font-bold text-sm mb-0.5" style={{ color: '#10b981' }}>
+                                    Episódio concluído!
+                                </p>
+                                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                                    Você completou todos os tópicos deste episódio.
+                                </p>
                             </motion.div>
                         )}
+
+                        {/* Bottom spacing for mobile */}
+                        <div className="h-4" />
                     </div>
                 </motion.div>
             </motion.div>

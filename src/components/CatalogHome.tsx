@@ -1,142 +1,252 @@
-// CatalogHome.tsx — Biblioteca Virtual
-import React, { useState } from 'react';
+// CatalogHome.tsx — Biblioteca Virtual v2
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-// Catalog DB is now injected as prop from Go backend in App.tsx
 
-const CORES: Record<string, { grad: string; bg: string; emoji: string }> = {
-    historia: { grad: 'from-orange-400 to-red-600', bg: 'from-[#0b1c2c] to-[#06101a]', emoji: '📜' },
-    matematica: { grad: 'from-blue-400 to-indigo-600', bg: 'from-[#0f172a] to-[#040914]', emoji: '🔢' },
-    quimica: { grad: 'from-emerald-400 to-teal-600', bg: 'from-[#062118] to-[#020d0a]', emoji: '⚗️' },
-    biologia: { grad: 'from-lime-400 to-green-600', bg: 'from-[#11220b] to-[#070f04]', emoji: '🧬' },
-    fisica: { grad: 'from-cyan-400 to-blue-600', bg: 'from-[#081e28] to-[#030d12]', emoji: '⚡' },
-    geografia: { grad: 'from-teal-400 to-cyan-600', bg: 'from-[#062424] to-[#020e0e]', emoji: '🌍' },
-    redacao: { grad: 'from-pink-400 to-rose-600', bg: 'from-[#2e0916] to-[#120308]', emoji: '✍️' },
-    socfilo: { grad: 'from-purple-400 to-fuchsia-600', bg: 'from-[#1e0a2d] to-[#0d0314]', emoji: '🧠' },
+const SUBJECT_META: Record<string, { color: string; border: string; label: string }> = {
+    historia:   { color: '#f59e0b', border: 'rgba(245,158,11,0.2)',  label: 'Ciências Humanas' },
+    matematica: { color: '#3b82f6', border: 'rgba(59,130,246,0.2)',  label: 'Matemática' },
+    quimica:    { color: '#10b981', border: 'rgba(16,185,129,0.2)',  label: 'Ciências da Natureza' },
+    biologia:   { color: '#84cc16', border: 'rgba(132,204,22,0.2)',  label: 'Ciências da Natureza' },
+    fisica:     { color: '#06b6d4', border: 'rgba(6,182,212,0.2)',   label: 'Ciências da Natureza' },
+    geografia:  { color: '#14b8a6', border: 'rgba(20,184,166,0.2)',  label: 'Ciências Humanas' },
+    redacao:    { color: '#ec4899', border: 'rgba(236,72,153,0.2)',  label: 'Linguagens' },
+    socfilo:    { color: '#a855f7', border: 'rgba(168,85,247,0.2)',  label: 'Ciências Humanas' },
 };
 
-interface Props { catalog: any[]; onSelectTemporada: (id: string) => void; onOriginal: () => void; }
+const SUBJECT_ICONS: Record<string, string> = {
+    historia: '📜', matematica: '∑', quimica: '⚗️', biologia: '🧬',
+    fisica: '⚡', geografia: '🌍', redacao: '✍️', socfilo: '🧠',
+};
+
+const FILTER_AREAS = ['Todos', 'Ciências Humanas', 'Ciências da Natureza', 'Matemática', 'Linguagens'];
+
+interface Props {
+    catalog: any[];
+    onSelectTemporada: (id: string) => void;
+    onOriginal: () => void;
+}
 
 export default function CatalogHome({ catalog, onSelectTemporada, onOriginal }: Props) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const totalEpisodios = catalog.reduce((acc, t) => acc + t.episodios.length, 0);
+    const [search, setSearch] = useState('');
+    const [activeArea, setActiveArea] = useState('Todos');
 
-    const filteredCatalog = catalog.filter(t =>
-        t.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.descricao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.materia.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const totalEps = catalog.reduce((acc, t) => acc + t.episodios.length, 0);
+
+    const filtered = useMemo(() => {
+        return catalog.filter(t => {
+            const meta = SUBJECT_META[t.materia];
+            const matchArea = activeArea === 'Todos' || (meta && meta.label === activeArea);
+            const q = search.toLowerCase();
+            const matchSearch = !q ||
+                t.titulo.toLowerCase().includes(q) ||
+                t.descricao.toLowerCase().includes(q) ||
+                t.materia.toLowerCase().includes(q);
+            return matchArea && matchSearch;
+        });
+    }, [catalog, search, activeArea]);
 
     return (
-        <div className="w-full">
-            {/* Hero / Header */}
-            <header className="mb-12">
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <div className="flex items-center gap-2 text-white/40 mb-2">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#ec4899]">Acesso Global</span>
-                        </div>
-                        <h1 className="text-4xl sm:text-5xl font-black text-white tracking-tighter mb-2">
-                            Biblioteca <span className="bg-gradient-to-r from-pink-500 to-rose-500 bg-clip-text text-transparent italic">Virtual.</span>
-                        </h1>
-                        <p className="text-white/50 text-sm max-w-lg">Todo o diretório de dados desbloqueado para você. Pesquise rapidamente ou explore as áreas do conhecimento.</p>
-                    </div>
-                </div>
+        <div className="w-full space-y-6">
 
-                {/* Busca Global Incorporada */}
-                <div className="relative max-w-2xl w-full">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg className="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            {/* ─── Header ─── */}
+            <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                <div className="flex-1">
+                    <p className="section-label mb-1">Conteúdo</p>
+                    <h1 className="text-2xl md:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                        Biblioteca Virtual
+                    </h1>
+                    <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+                        {catalog.length} matérias · {totalEps} episódios disponíveis
+                    </p>
+                </div>
+            </div>
+
+            {/* ─── Search + Filters ─── */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                {/* Search */}
+                <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: 'var(--text-muted)' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
                     <input
                         type="text"
-                        placeholder="Buscar por matérias, assuntos ou professores..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#121526] border border-white/10 rounded-2xl py-4 pl-12 pr-12 text-white placeholder-white/30 outline-none focus:border-pink-500/50 focus:shadow-[0_0_20px_rgba(236,72,153,0.15)] transition-all"
+                        placeholder="Buscar matéria, assunto..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        className="input-field pl-9 pr-8"
                     />
-                    {searchTerm.length > 0 && (
-                        <button onClick={() => setSearchTerm('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white p-2">
-                            ✕
+                    {search && (
+                        <button
+                            onClick={() => setSearch('')}
+                            className="absolute inset-y-0 right-3 flex items-center"
+                            style={{ color: 'var(--text-muted)' }}
+                        >
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     )}
                 </div>
-            </header>
 
-            {/* Grid de Temporadas */}
-            <main className="pb-24">
-                {filteredCatalog.length === 0 && (
-                    <div className="py-20 text-center border border-white/5 rounded-3xl bg-[#121526]/50">
-                        <div className="text-4xl mb-4">🔍</div>
-                        <h3 className="text-xl font-bold text-white mb-2">Nada encontrado</h3>
-                        <p className="text-gray-500 text-sm">Nenhuma matéria encontrada para "{searchTerm}"</p>
-                        <button onClick={() => setSearchTerm('')} className="mt-4 text-purple-400 text-sm hover:underline">
-                            Limpar busca
+                {/* Area filters - scrollable on mobile */}
+                <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1">
+                    {FILTER_AREAS.map(area => (
+                        <button
+                            key={area}
+                            onClick={() => setActiveArea(area)}
+                            className="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            style={activeArea === area ? {
+                                background: 'var(--brand)',
+                                color: 'white',
+                            } : {
+                                background: 'var(--bg-surface)',
+                                border: '1px solid var(--border)',
+                                color: 'var(--text-muted)',
+                            }}
+                        >
+                            {area}
                         </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* ─── Grid ─── */}
+            {filtered.length === 0 ? (
+                <div
+                    className="py-16 text-center rounded-2xl border"
+                    style={{ borderColor: 'var(--border)', background: 'var(--bg-surface)' }}
+                >
+                    <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
+                        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: 'var(--text-muted)' }}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
                     </div>
-                )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    {filteredCatalog.map((temporada, idx) => {
-                        const cores = CORES[temporada.materia] || CORES.historia;
+                    <p className="font-semibold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
+                        Nenhum resultado
+                    </p>
+                    <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+                        {search ? `Nada encontrado para "${search}"` : 'Nenhuma matéria nessa área.'}
+                    </p>
+                    <button
+                        onClick={() => { setSearch(''); setActiveArea('Todos'); }}
+                        className="btn-ghost text-xs py-1.5 px-4"
+                    >
+                        Limpar filtros
+                    </button>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {filtered.map((temporada, idx) => {
+                        const meta = SUBJECT_META[temporada.materia] || SUBJECT_META.historia;
+                        const icon = SUBJECT_ICONS[temporada.materia] || '📚';
                         return (
                             <motion.div
                                 key={temporada.id}
-                                initial={{ opacity: 0, y: 30 }}
+                                initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.07, duration: 0.5 }}
-                                whileHover={{ y: -10, scale: 1.02 }}
+                                transition={{ delay: idx * 0.04, duration: 0.35 }}
                                 onClick={() => onSelectTemporada(temporada.id)}
-                                className="cursor-pointer group"
+                                className="card-interactive group"
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={e => e.key === 'Enter' && onSelectTemporada(temporada.id)}
                             >
-                                <div className={`relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[120px] sm:h-[340px] flex flex-row sm:flex-col bg-gradient-to-br ${cores.bg} border border-white/5 group-hover:border-white/20 shadow-xl transition-all duration-500`}>
-                                    {/* Gradient overlay on hover */}
-                                    <div className={`absolute inset-0 bg-gradient-to-tr ${cores.grad} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-
-                                    {/* Icon */}
-                                    <div className={`shrink-0 ml-4 sm:ml-0 self-center sm:self-auto sm:absolute sm:top-6 sm:left-6 w-16 h-16 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-3xl sm:text-3xl bg-gradient-to-br ${cores.grad} shadow-lg z-10`}>
-                                        {cores.emoji}
+                                <div className="p-4">
+                                    {/* Top row */}
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div
+                                            className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                                            style={{
+                                                background: `${meta.color}14`,
+                                                border: `1px solid ${meta.border}`,
+                                            }}
+                                        >
+                                            {icon}
+                                        </div>
+                                        <span
+                                            className="text-[10px] font-semibold px-2 py-1 rounded-lg"
+                                            style={{
+                                                background: 'var(--bg-elevated)',
+                                                color: 'var(--text-muted)',
+                                            }}
+                                        >
+                                            {temporada.episodios.length} eps.
+                                        </span>
                                     </div>
 
-                                    {/* Content Wrapper for mobile vs desktop */}
-                                    <div className="flex flex-col justify-center sm:justify-end flex-1 p-4 sm:p-6 sm:pb-8 sm:absolute sm:inset-0 text-left sm:text-center z-10">
-                                        <span className="hidden sm:block text-[9px] px-3 py-1.5 rounded-full border border-white/10 text-white/40 uppercase tracking-widest font-black absolute top-8 right-6">
-                                            {temporada.episodios.length} episódios
-                                        </span>
-                                        <h3 className="text-xl sm:text-3xl font-black uppercase tracking-tighter text-white sm:mb-2">{temporada.titulo}</h3>
-                                        <p className="text-[10px] sm:text-sm font-bold text-white/50 uppercase tracking-widest truncate">{temporada.materia}</p>
-
-                                        {/* Mobile episode count */}
-                                        <span className="sm:hidden text-[9px] mt-1 text-white/40 uppercase tracking-widest font-black">
-                                            {temporada.episodios.length} episódios
-                                        </span>
+                                    {/* Info */}
+                                    <div className="mb-3">
+                                        <div
+                                            className="text-[10px] font-semibold mb-1"
+                                            style={{ color: meta.color }}
+                                        >
+                                            {meta.label.toUpperCase()}
+                                        </div>
+                                        <h3
+                                            className="font-bold text-sm leading-tight line-clamp-2"
+                                            style={{ color: 'var(--text-primary)' }}
+                                        >
+                                            {temporada.titulo}
+                                        </h3>
+                                        {temporada.descricao && (
+                                            <p
+                                                className="text-xs mt-1 line-clamp-2 leading-relaxed"
+                                                style={{ color: 'var(--text-muted)' }}
+                                            >
+                                                {temporada.descricao}
+                                            </p>
+                                        )}
                                     </div>
 
-                                    {/* Play indicator line */}
-                                    <div className="absolute top-0 right-0 sm:bottom-0 sm:left-0 sm:top-auto w-1 h-full sm:w-full sm:h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    {/* Footer */}
+                                    <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
+                                        <span className="text-[10px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                                            {temporada.materia.charAt(0).toUpperCase() + temporada.materia.slice(1)}
+                                        </span>
+                                        <span
+                                            className="text-xs font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            style={{ color: 'var(--brand-light)' }}
+                                        >
+                                            Abrir
+                                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </span>
+                                    </div>
                                 </div>
+
+                                {/* Accent bar at the bottom */}
+                                <div
+                                    className="h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-b-lg"
+                                    style={{ background: `linear-gradient(90deg, ${meta.color}, transparent)` }}
+                                />
                             </motion.div>
                         );
                     })}
                 </div>
-            </main>
+            )}
 
-            {/* Stats Footer */}
-            <footer className="border-t border-white/5 py-12 mb-10">
-                <div className="flex flex-wrap gap-8 justify-center mb-8">
+            {/* ─── Stats Footer ─── */}
+            {filtered.length > 0 && (
+                <div
+                    className="flex flex-wrap gap-6 justify-center py-6 border-t mt-2"
+                    style={{ borderColor: 'var(--border)' }}
+                >
                     {[
-                        { label: 'Pastas', value: catalog.length, emoji: '📚' },
-                        { label: 'Episódios', value: totalEpisodios, emoji: '🎬' },
-                        { label: 'Professores Top', value: '24+', emoji: '👨‍🏫' },
-                        { label: 'Quizzes', value: catalog.reduce((a, t) => a + t.episodios.filter((e: any) => e.quiz).length, 0), emoji: '🧠' },
-                    ].map((stat, i) => (
+                        { label: 'Matérias', value: catalog.length },
+                        { label: 'Episódios', value: totalEps },
+                        { label: 'Professores', value: '24+' },
+                        { label: 'Quizzes', value: catalog.reduce((a: number, t: any) => a + t.episodios.filter((e: any) => e.quiz).length, 0) },
+                    ].map((s, i) => (
                         <div key={i} className="text-center">
-                            <div className="text-3xl mb-1 opacity-70">{stat.emoji}</div>
-                            <div className="text-2xl font-black text-white">{stat.value}</div>
-                            <div className="text-[10px] font-black text-white/30 uppercase tracking-widest">{stat.label}</div>
+                            <div className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>{s.value}</div>
+                            <div className="section-label mt-0.5">{s.label}</div>
                         </div>
                     ))}
                 </div>
-            </footer >
-        </div >
+            )}
+        </div>
     );
 }
