@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TRILHAS = [
     {
         id: 'fundamentos',
         titulo: 'Fundamentos',
         tag: 'Essencial',
-        desc: 'Base conceitual das principais disciplinas do ENEM. Ideal para revisão dos conceitos centrais.',
-        color: '#4f8ef7',
+        tagClass: 'chip-amber',
+        desc: 'Base conceitual das principais disciplinas do ENEM. Ideal para revisão dos conceitos centrais antes de avançar.',
+        color: '#f59e0b',
         etapas: [
-            { label: 'Matemática Básica', done: true },
-            { label: 'Interpretação Crítica', done: true },
-            { label: 'História Geral I', done: false },
+            { label: 'Matemática Básica',      done: true },
+            { label: 'Interpretação Crítica',  done: true },
+            { label: 'História Geral I',       done: false },
         ],
         progress: 66,
         icon: (
@@ -24,12 +25,13 @@ const TRILHAS = [
         id: 'estrategias',
         titulo: 'Estratégias',
         tag: 'Avançado',
+        tagClass: 'chip-mint',
         desc: 'Métodos para maximizar desempenho. Aprenda a usar a TRI a seu favor e gerir o tempo de prova.',
-        color: '#00d4aa',
+        color: '#34d399',
         etapas: [
-            { label: 'Análise da Matriz TRI', done: false },
-            { label: 'Microestrutura da Redação', done: false },
-            { label: 'Gestão de Tempo em Prova', done: false },
+            { label: 'Análise da Matriz TRI',       done: false },
+            { label: 'Microestrutura da Redação',   done: false },
+            { label: 'Gestão de Tempo em Prova',    done: false },
         ],
         progress: 0,
         icon: (
@@ -42,12 +44,13 @@ const TRILHAS = [
         id: 'repertorio',
         titulo: 'Repertório',
         tag: 'Complementar',
-        desc: 'Conteúdo sociocultural para argumentação dissertativa. Filmes, livros e músicas como repertório qualificado.',
-        color: '#f472b6',
+        tagClass: 'chip-sky',
+        desc: 'Conteúdo sociocultural para argumentação. Filmes, livros e músicas como repertório qualificado para a redação.',
+        color: '#60a5fa',
         etapas: [
-            { label: 'Cinema e Sociologia', done: true },
-            { label: 'Filosofia Prática', done: false },
-            { label: 'Geopolítica e Guerra Fria', done: false },
+            { label: 'Cinema e Sociologia',        done: true },
+            { label: 'Filosofia Prática',          done: false },
+            { label: 'Geopolítica e Guerra Fria',  done: false },
         ],
         progress: 33,
         icon: (
@@ -59,209 +62,244 @@ const TRILHAS = [
 ];
 
 export default function Trilhas({ onNavigate }: { onNavigate: (v: string, id?: string) => void }) {
-    const [hoveredId, setHoveredId] = useState<string | null>(null);
+    const [expanded, setExpanded] = useState<string | null>(null);
 
     return (
-        <div className="w-full space-y-6 fade-in-up">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} className="anim-fade-up">
 
-            {/* ─── Header ─── */}
+            {/* ── Header ── */}
             <div>
-                <p className="section-label mb-1.5">Aprendizado estruturado</p>
-                <h1
-                    className="text-3xl md:text-4xl font-extrabold tracking-tight text-balance"
-                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.04em' }}
-                >
-                    Trilhas de Aprendizado
+                <p className="label mb-2">Aprendizado estruturado</p>
+                <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.4rem)', marginBottom: '0.3rem' }}>
+                    Trilhas de{' '}
+                    <span style={{
+                        background: 'linear-gradient(120deg, var(--amber), var(--mint))',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                    }}>
+                        Aprendizado
+                    </span>
                 </h1>
-                <p className="text-sm mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                    Rotas projetadas para solidificar seu conhecimento de forma estratégica.
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', maxWidth: 480 }}>
+                    Rotas projetadas para solidificar seu conhecimento de forma estratégica e progressiva.
                 </p>
             </div>
 
-            {/* ─── Cards ─── */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* ── Cards ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
                 {TRILHAS.map((trilha, idx) => {
-                    const isHovered = hoveredId === trilha.id;
+                    const isOpen = expanded === trilha.id;
+
                     return (
                         <motion.div
                             key={trilha.id}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 18 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.1, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                            onMouseEnter={() => setHoveredId(trilha.id)}
-                            onMouseLeave={() => setHoveredId(null)}
-                            className="relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300"
                             style={{
-                                background: 'var(--bg-surface)',
-                                border: `1px solid ${isHovered ? trilha.color + '40' : 'var(--border)'}`,
-                                boxShadow: isHovered ? `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${trilha.color}20` : 'none',
-                                transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+                                background: 'var(--bg-2)',
+                                borderRadius: '1.375rem',
+                                border: `1px solid var(--line)`,
+                                overflow: 'hidden',
+                                transition: 'border-color 0.2s, box-shadow 0.2s',
+                                position: 'relative',
+                            }}
+                            onMouseEnter={e => {
+                                const el = e.currentTarget;
+                                el.style.borderColor = `${trilha.color}40`;
+                                el.style.boxShadow = `0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px ${trilha.color}20`;
+                            }}
+                            onMouseLeave={e => {
+                                const el = e.currentTarget;
+                                el.style.borderColor = 'var(--line)';
+                                el.style.boxShadow = 'none';
                             }}
                         >
-                            {/* Top accent bar */}
-                            <div className="h-0.5 w-full">
+                            {/* Animated top bar */}
+                            <div style={{ height: 3, background: 'var(--bg-4)', position: 'relative', overflow: 'hidden' }}>
                                 <motion.div
-                                    className="h-full"
-                                    style={{ background: trilha.color }}
-                                    initial={{ width: `${trilha.progress}%` }}
-                                    animate={{ width: isHovered ? '100%' : `${trilha.progress}%` }}
-                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    style={{
+                                        position: 'absolute', left: 0, top: 0, bottom: 0,
+                                        background: `linear-gradient(90deg, ${trilha.color}, ${trilha.color}80)`,
+                                        borderRadius: 3,
+                                    }}
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${trilha.progress || 4}%` }}
+                                    transition={{ delay: idx * 0.1 + 0.3, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                                 />
                             </div>
 
-                            <div className="p-5 flex flex-col flex-1">
+                            <div style={{ padding: '1.25rem' }}>
                                 {/* Icon + Tag */}
-                                <div className="flex items-start justify-between mb-5">
-                                    <div
-                                        className="w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300"
-                                        style={{
-                                            background: isHovered ? `${trilha.color}20` : `${trilha.color}10`,
-                                            border: `1px solid ${trilha.color}30`,
-                                            color: trilha.color,
-                                        }}
-                                    >
+                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                    <div style={{
+                                        width: 44, height: 44, borderRadius: '0.875rem',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        background: `${trilha.color}12`,
+                                        border: `1px solid ${trilha.color}25`,
+                                        color: trilha.color,
+                                    }}>
                                         {trilha.icon}
                                     </div>
-                                    <span
-                                        className="text-[9px] font-bold px-2.5 py-1 rounded-lg tracking-widest uppercase"
-                                        style={{
-                                            background: `${trilha.color}14`,
-                                            color: trilha.color,
-                                        }}
-                                    >
-                                        {trilha.tag}
-                                    </span>
+                                    <span className={`chip ${trilha.tagClass}`}>{trilha.tag}</span>
                                 </div>
 
                                 {/* Title + Desc */}
-                                <h2
-                                    className="font-extrabold text-base mb-2 tracking-tight"
-                                    style={{ color: 'var(--text-primary)', letterSpacing: '-0.025em' }}
-                                >
+                                <h2 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-1)', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
                                     {trilha.titulo}
                                 </h2>
-                                <p
-                                    className="text-xs leading-relaxed mb-5 flex-1"
-                                    style={{ color: 'var(--text-muted)' }}
-                                >
+                                <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', lineHeight: 1.55, marginBottom: '1rem' }}>
                                     {trilha.desc}
                                 </p>
 
-                                {/* Steps */}
-                                <div className="space-y-2 mb-5">
-                                    {trilha.etapas.map((etapa, eIdx) => (
-                                        <div key={eIdx} className="flex items-center gap-2.5">
-                                            <div
-                                                className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-                                                style={{
-                                                    background: etapa.done ? `${trilha.color}20` : 'var(--bg-elevated)',
-                                                    border: `1.5px solid ${etapa.done ? trilha.color : 'var(--border)'}`,
-                                                }}
-                                            >
-                                                {etapa.done && (
-                                                    <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke={trilha.color} strokeWidth={3}>
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                )}
-                                            </div>
-                                            <span
-                                                className="text-xs"
-                                                style={{
-                                                    color: etapa.done ? 'var(--text-secondary)' : 'var(--text-muted)',
-                                                }}
-                                            >
-                                                {etapa.label}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
                                 {/* Progress */}
                                 {trilha.progress > 0 && (
-                                    <div className="mb-4 space-y-1.5">
-                                        <div className="flex justify-between items-center">
-                                            <span className="section-label">Progresso</span>
-                                            <span className="text-xs font-bold" style={{ color: trilha.color }}>
-                                                {trilha.progress}%
-                                            </span>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                            <p className="label">Progresso</p>
+                                            <span style={{ fontSize: '0.7rem', fontWeight: 700, color: trilha.color }}>{trilha.progress}%</span>
                                         </div>
-                                        <div className="progress-bar">
+                                        <div className="progress-track">
                                             <motion.div
                                                 style={{ height: '100%', borderRadius: 999, background: trilha.color }}
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${trilha.progress}%` }}
-                                                transition={{ delay: idx * 0.1 + 0.4, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                                                transition={{ delay: idx * 0.1 + 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                                             />
                                         </div>
                                     </div>
                                 )}
 
+                                {/* Steps — toggleable */}
+                                <button
+                                    onClick={() => setExpanded(isOpen ? null : trilha.id)}
+                                    style={{
+                                        width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '0.5rem 0', marginBottom: '0.5rem',
+                                        borderTop: '1px solid var(--line)',
+                                        color: 'var(--text-3)',
+                                        fontSize: '0.72rem', fontWeight: 600,
+                                    }}
+                                >
+                                    <span>{trilha.etapas.filter(e => e.done).length}/{trilha.etapas.length} etapas</span>
+                                    <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.22 }}>
+                                        <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
+                                            <path d="M6 9l6 6 6-6" />
+                                        </svg>
+                                    </motion.span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isOpen && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                                            style={{ overflow: 'hidden' }}
+                                        >
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingBottom: '0.75rem' }}>
+                                                {trilha.etapas.map((etapa, eIdx) => (
+                                                    <motion.div
+                                                        key={eIdx}
+                                                        initial={{ opacity: 0, x: -8 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ delay: eIdx * 0.06, duration: 0.25 }}
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}
+                                                    >
+                                                        <div style={{
+                                                            width: 17, height: 17, borderRadius: '0.35rem', flexShrink: 0,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            background: etapa.done ? `${trilha.color}18` : 'var(--bg-4)',
+                                                            border: `1.5px solid ${etapa.done ? trilha.color : 'var(--line)'}`,
+                                                        }}>
+                                                            {etapa.done && (
+                                                                <svg width="8" height="8" fill="none" viewBox="0 0 24 24" stroke={trilha.color} strokeWidth={3} strokeLinecap="round">
+                                                                    <path d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                            )}
+                                                        </div>
+                                                        <span style={{
+                                                            fontSize: '0.75rem',
+                                                            color: etapa.done ? 'var(--text-2)' : 'var(--text-3)',
+                                                            textDecoration: etapa.done ? 'line-through' : 'none',
+                                                        }}>
+                                                            {etapa.label}
+                                                        </span>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 {/* CTA */}
-                                <motion.button
-                                    whileHover={{ scale: 1.01 }}
-                                    whileTap={{ scale: 0.99 }}
-                                    className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
-                                    style={trilha.progress > 0 ? {
-                                        background: `${trilha.color}18`,
-                                        color: trilha.color,
-                                        border: `1px solid ${trilha.color}30`,
-                                    } : {
-                                        background: 'var(--bg-elevated)',
-                                        color: 'var(--text-secondary)',
-                                        border: '1px solid var(--border)',
+                                <button
+                                    className="btn w-full"
+                                    style={{
+                                        justifyContent: 'center',
+                                        borderRadius: '0.875rem',
+                                        background: trilha.progress > 0 ? `${trilha.color}14` : 'var(--bg-3)',
+                                        color: trilha.progress > 0 ? trilha.color : 'var(--text-2)',
+                                        border: `1px solid ${trilha.progress > 0 ? `${trilha.color}28` : 'var(--line)'}`,
+                                        marginTop: '0.25rem',
                                     }}
                                     onMouseEnter={e => {
                                         e.currentTarget.style.background = trilha.color;
-                                        e.currentTarget.style.color = trilha.color === '#4f8ef7' || trilha.color === '#f472b6' ? '#fff' : '#08080c';
+                                        e.currentTarget.style.color = trilha.color === '#34d399' || trilha.color === '#60a5fa' ? '#0c0c0c' : '#fff';
                                         e.currentTarget.style.borderColor = trilha.color;
                                         e.currentTarget.style.boxShadow = `0 4px 20px ${trilha.color}40`;
                                     }}
                                     onMouseLeave={e => {
-                                        if (trilha.progress > 0) {
-                                            e.currentTarget.style.background = `${trilha.color}18`;
-                                            e.currentTarget.style.color = trilha.color;
-                                            e.currentTarget.style.borderColor = `${trilha.color}30`;
-                                        } else {
-                                            e.currentTarget.style.background = 'var(--bg-elevated)';
-                                            e.currentTarget.style.color = 'var(--text-secondary)';
-                                            e.currentTarget.style.borderColor = 'var(--border)';
-                                        }
+                                        e.currentTarget.style.background = trilha.progress > 0 ? `${trilha.color}14` : 'var(--bg-3)';
+                                        e.currentTarget.style.color = trilha.progress > 0 ? trilha.color : 'var(--text-2)';
+                                        e.currentTarget.style.borderColor = trilha.progress > 0 ? `${trilha.color}28` : 'var(--line)';
                                         e.currentTarget.style.boxShadow = 'none';
                                     }}
                                 >
                                     {trilha.progress > 0 ? 'Continuar trilha' : 'Iniciar trilha'}
-                                </motion.button>
+                                </button>
                             </div>
                         </motion.div>
                     );
                 })}
             </div>
 
-            {/* ─── Info Banner ─── */}
-            <div
-                className="flex flex-col sm:flex-row sm:items-center gap-4 p-5 rounded-2xl"
-                style={{
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border)',
-                }}
+            {/* ── Banner ── */}
+            <div style={{
+                display: 'flex', flexDirection: 'column', gap: '1rem',
+                padding: '1.25rem',
+                background: 'var(--bg-2)',
+                border: '1px solid var(--line)',
+                borderRadius: '1.375rem',
+            }}
+                className="sm:flex-row sm:items-center"
             >
-                <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-glow)' }}
-                >
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)' }}>
+                <div style={{
+                    width: 40, height: 40, borderRadius: '0.75rem', flexShrink: 0,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'var(--mint-soft)',
+                    border: '1px solid rgba(52,211,153,0.2)',
+                }}>
+                    <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--mint)' }}>
                         <circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" />
                     </svg>
                 </div>
-                <div className="flex-1">
-                    <p className="font-bold text-sm mb-0.5 tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-1)', marginBottom: '0.2rem' }}>
                         Novas trilhas em breve
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        Trilhas especializadas para Redação, Ciências da Natureza e mais estão sendo preparadas.
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>
+                        Trilhas de Redação, Ciências da Natureza e mais estão sendo preparadas para o ENEM 2025.
                     </p>
                 </div>
-                <button onClick={() => onNavigate('catalog')} className="btn-ghost flex-shrink-0 text-xs py-2">
+                <button
+                    onClick={() => onNavigate('catalog')}
+                    className="btn btn-outline"
+                    style={{ flexShrink: 0, borderRadius: '0.75rem', fontSize: '0.8rem' }}
+                >
                     Ver biblioteca
                 </button>
             </div>
